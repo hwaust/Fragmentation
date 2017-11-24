@@ -32,7 +32,12 @@ public class BaseXClient implements Closeable {
 	/** Command info. */
 	// NOTE: remove private
 	String info;
-
+	
+	
+	
+	
+	
+	
 	/**
 	 * Constructor.
 	 * 
