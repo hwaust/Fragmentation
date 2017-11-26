@@ -8,7 +8,8 @@ public class FContext {
 	public String ip;
 	public String db;
 	public String algo;
-	public int N;
+	public int Ns;
+	public int seed;
 	public int maxsize;
 	public String outputFolder;
 	public boolean needExport;
@@ -17,10 +18,11 @@ public class FContext {
 		ip = "localhost";
 		db = "xmark0.01";
 		algo = "hw";
-		N = 4;
+		Ns = 16;
 		maxsize = 1000;
 		outputFolder = "D:\\data\\fragments";
 		needExport = true;
+		seed = 20171126;
 	}
 
 	public static FContext parse(String[] args) throws Exception {
@@ -41,7 +43,7 @@ public class FContext {
 				fc.algo = v;
 				break;
 			case "n":
-				fc.N = Integer.parseInt(v);
+				fc.Ns = Integer.parseInt(v);
 				break;
 			case "ms":
 				fc.maxsize = Integer.parseInt(v);
@@ -51,6 +53,9 @@ public class FContext {
 				break;
 			case "export":
 				fc.needExport = v.equals("on");
+				break;
+			case "seed":
+				fc.seed = Integer.parseInt(v);
 				break;
 			}
 
@@ -66,13 +71,13 @@ public class FContext {
 			throw new Exception(String.format("violating Context.server != null."));
 		if (db == null)
 			throw new Exception("violating Context.table != null.");
-		if (N < 2)
+		if (Ns < 2)
 			throw new Exception("violating Context.N > 2.");
 	}
 
 	public String toString() {
-		return String.format("%s:%s by %s, N=%d, maxsize=%d, output directory=%s%s\n", ip, db, algo, N, maxsize,
-				outputFolder, needExport ? "" : ", no export.");
+		return String.format("%s:%s by %s, N=%d, maxsize=%d, seed=%d, output directory=%s%s\n", ip, db, algo, Ns,
+				maxsize, seed, outputFolder, needExport ? "" : ", no export.");
 	}
 
 	/**
@@ -91,7 +96,7 @@ public class FContext {
 	 * @return
 	 */
 	public String getFillFilename() {
-		return String.format("%s%s_%s_%d_%d.txt", outputFolder + File.separator, db, algo, N, maxsize);
+		return String.format("%s%s_%s_%d_%d.txt", outputFolder + File.separator, db, algo, Ns, maxsize);
 	}
 
 	/**
@@ -101,7 +106,7 @@ public class FContext {
 	 * @return
 	 */
 	public String getFullPath(String filename) {
-		String dir = outputFolder + File.separator + String.format("%s_%s_%d_%d", db, algo, N, maxsize);
+		String dir = outputFolder + File.separator + String.format("%s_%s_%d_%d", db, algo, Ns, maxsize);
 		File file = new File(dir);
 		file.mkdir();
 
@@ -113,7 +118,7 @@ public class FContext {
 
 	public DBInfo[] getDBInfo() {
 		String dir = this.getFullPath(null);
-		DBInfo[] dbs = new DBInfo[N];
+		DBInfo[] dbs = new DBInfo[Ns];
 		for (int i = 0; i < dbs.length; i++)
 			dbs[i] = new DBInfo(ip, "frag_" + i, dir);
 

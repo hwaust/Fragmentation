@@ -7,7 +7,7 @@ import java.util.List;
 
 import basex.common;
 
-public class FragmentInfo {
+public class FragmentIndex {
 	public int fid;
 	public int mid;
 	public int mrank;
@@ -20,7 +20,7 @@ public class FragmentInfo {
 	 */
 	public ArrayList<String> results;
 
-	public FragmentInfo() {
+	public FragmentIndex() {
 		results = new ArrayList<String>();
 	}
 
@@ -31,7 +31,7 @@ public class FragmentInfo {
 	 * @param mid
 	 * @param position
 	 */
-	public FragmentInfo(int fid, int mid, int mrank, int size, int gpre, int mpre) {
+	public FragmentIndex(int fid, int mid, int mrank, int size, int gpre, int mpre) {
 		this.fid = fid;
 		this.mid = mid;
 		this.mrank = mrank;
@@ -44,8 +44,8 @@ public class FragmentInfo {
 		return String.format("fid=%d,mid=%d,mrank=%d,size=%d,gpre=%d,mpre=%d", fid, mid, mrank, size, gpre, mpre);
 	}
 
-	public static FragmentInfo parse(String s) {
-		FragmentInfo link = new FragmentInfo();
+	public static FragmentIndex parse(String s) {
+		FragmentIndex link = new FragmentIndex();
 		try {
 			String[] strs = s.split(",");
 			link.fid = Integer.parseInt(strs[0].split("=")[1]);
@@ -59,21 +59,25 @@ public class FragmentInfo {
 		return link;
 	}
 
-	public static void writeAllInfo(FragmentInfo[] fis, String filepath) {
+	public static void writeAllInfo(FragmentIndex[] fis, String filepath) {
 		StringBuilder sb = new StringBuilder();
-		for (FragmentInfo fi : fis)
+		for (FragmentIndex fi : fis)
 			sb.append(fi.toString() + "\n");
+
+		if (sb.length() > 0)
+			sb.deleteCharAt(sb.length() - 1); // remove last '\n';
+		
 		common.saveStringtoFile(sb.toString(), filepath);
 	}
 
-	public static FragmentInfo[] readLinks(String file) throws Exception {
+	public static FragmentIndex[] readLinks(String file) throws Exception {
 		List<String> lines = Files.readAllLines(Paths.get(file));
-		ArrayList<FragmentInfo> links = new ArrayList<FragmentInfo>();
+		ArrayList<FragmentIndex> links = new ArrayList<FragmentIndex>();
 		for (String s : lines) {
-			links.add(FragmentInfo.parse(s));
+			links.add(FragmentIndex.parse(s));
 		}
 
-		FragmentInfo[] linkarray = new FragmentInfo[links.size()];
+		FragmentIndex[] linkarray = new FragmentIndex[links.size()];
 		for (int i = 0; i < links.size(); i++)
 			linkarray[i] = links.get(i);
 

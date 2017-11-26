@@ -22,10 +22,6 @@ public class Node {
 	 */
 	public int mpre;
 
-	public ArrayList<Node> children;
-
-	public Node parent;
-
 	/**
 	 * Tag name used to recover the whole tree in XML
 	 */
@@ -47,41 +43,35 @@ public class Node {
 	public int contentSize;
 
 	/**
-	 * The list of children in PRE values.
-	 */
-	public String[] subtreePREs;
-
-	/**
 	 * Total number of nodes, including all three node types.
 	 */
 	public int size;
 
+	public Node parent;
+
+	public ArrayList<Node> children;
+
 	public Node() {
-		children = new ArrayList<Node>();
-		subtreePREs = new String[0];
 	}
 
 	public Node(int pre) {
 		this.gpre = pre;
-		children = new ArrayList<Node>();
-		subtreePREs = new String[0];
 	}
 
 	public void addChild(Node node) {
+		if (children == null)
+			children = new ArrayList<Node>();
+
 		children.add(node);
 		node.parent = this;
 	}
 
-	public String toPREString() {
-		return gpre + "";
-	}
+
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("pre=%d, descendants.size=%d, ", gpre, elementSize));
+		sb.append(String.format("mpre=%d, element=%d, attributes=%d, content=%d, ", gpre, elementSize, attributeSize, contentSize));
 
-		if (this.subtreePREs != null)
-			sb.append("child size(str)=" + this.subtreePREs.length);
 		if (children.size() == 0)
 			sb.append("child.size=0, ");
 		else
@@ -124,12 +114,9 @@ public class Node {
 			head.append("  ");
 		System.out.println(head + node.toString());
 
-		if (node.subtreePREs != null) {
-			System.out.println(head + node.toString() + "***");
-		} else {
-			for (Node ch : node.children)
-				print(ch, level + 1);
-		}
+		for (Node ch : node.children)
+			print(ch, level + 1);
+
 	}
 
 	/**
@@ -143,7 +130,6 @@ public class Node {
 		node.attributeSize = this.attributeSize;
 		node.contentSize = this.contentSize;
 		node.size = this.size;
-		node.subtreePREs = this.subtreePREs;
 		return node;
 	}
 
@@ -241,7 +227,7 @@ public class Node {
 	}
 
 	public int childsize() {
-		return this.subtreePREs.length > 0 ? subtreePREs.length : children.size();
+		return children.size();
 	}
 
 	public boolean isLeaf() {

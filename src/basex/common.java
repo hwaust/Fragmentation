@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import fragmentation.FragmentInfo;
+import fragmentation.FragmentIndex;
 
 public class common {
 
@@ -70,7 +70,7 @@ public class common {
 		return lines;
 	}
 
-	public FragmentInfo[] getLinks() {
+	public FragmentIndex[] getLinks() {
 		return null;
 	}
 
@@ -222,5 +222,6 @@ public class common {
 		System.out.printf("used = %s, free = %s, total = %s.", common.formatFileSize(mused),
 				common.formatFileSize(mfree), common.formatFileSize(mtotal));
 	}
+ 
 
 }

@@ -8,7 +8,7 @@ import basex.PExecutor;
 import basex.QueryPlans;
 import basex.QueryResult_IntStringList;
 import basex.common;
-import fragmentation.FragmentInfo;
+import fragmentation.FragmentIndex;
 
 public class QueryEvaluator {
 	static boolean isSerial = false;
@@ -39,11 +39,11 @@ public class QueryEvaluator {
 		}
 
 		// process links
-		FragmentInfo[][] linkss = new FragmentInfo[dbs.length][];
+		FragmentIndex[][] linkss = new FragmentIndex[dbs.length][];
 		for (int i = 0; i < linkss.length; i++)
-			linkss[i] = new FragmentInfo[pres[i].length];
-		FragmentInfo[] links = FragmentInfo.readLinks(args[1] + File.separator + "linkinfo.txt");
-		for (FragmentInfo link : links) {
+			linkss[i] = new FragmentIndex[pres[i].length];
+		FragmentIndex[] links = FragmentIndex.readLinks(args[1] + File.separator + "linkinfo.txt");
+		for (FragmentIndex link : links) {
 			link.mpre = pres[link.mid][link.mrank];
 			linkss[link.mid][link.mrank] = link;
 		}
@@ -86,7 +86,7 @@ public class QueryEvaluator {
 		int size = 0;
 		for (int i = 0; i < linkss.length; i++)
 			size += linkss[i].length;
-		FragmentInfo[] alllinks = new FragmentInfo[size];
+		FragmentIndex[] alllinks = new FragmentIndex[size];
 
 		for (int i = 0; i < linkss.length; i++)
 			for (int j = 0; j < linkss[i].length; j++)

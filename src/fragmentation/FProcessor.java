@@ -18,11 +18,10 @@ public class FProcessor {
 	}
 
 	public ArrayList<Fragment> apply(Node root) throws Exception {
-		bxhelper.open();
-
+		bxhelper.open(); 
 		root.name = bxhelper.getNodeName(root.gpre + "");
 		root.elementSize = bxhelper.getRootSize();
-		System.out.println("Start. root.size=" + root.elementSize);
+		System.out.println("root.size=" + root.elementSize);
 
 		ArrayList<Fragment> fragments = doFragmentation(Arrays.asList(root), context.maxsize);
 
@@ -31,7 +30,7 @@ public class FProcessor {
 	}
 
 	ArrayList<Fragment> doFragmentation(List<Node> nodes, int maxsize) throws Exception {
-		System.out.println("doFragmentation.nodes: input size=" + nodes.size());
+		System.out.printf("nodes.size=%d\n", nodes.size());
 		ArrayList<Fragment> fragments = new ArrayList<Fragment>();
 		Fragment curfrag = new Fragment();
 		for (Node node : nodes) {
@@ -63,28 +62,57 @@ public class FProcessor {
 		for (int i = 0; i < fragments.size(); i++)
 			fragments.get(i).fid = i;
 
+		
+		
+		System.gc();
+
 		return fragments;
 	}
 
-	public void makeXDocs(MergedTree tree, String path) throws Exception {
+	public void writeXMLDocuments(MergedTree tree, String path) throws Exception {
 		bxhelper.open();
 
 		FileWriter fw = new FileWriter(path);
 		String rootName = bxhelper.getNodeName("1");
 		fw.write("<" + rootName + ">");
 
+		
 		// write fragments of the current merged tree into stream
 		for (Fragment frag : tree.fragments) {
 			// root path
 			for (int i = 1; i < frag.rootPath.size(); i++) {
 				Node ni = frag.rootPath.get(i);
-				ni.name = bxhelper.getNodeName(ni.gpre + "");
 				fw.write("<" + ni.name + ">");
+			} 
+
+			// Save main contnet of subtrees.
+			int size = 1000; // maximun size of subtrees that being process at a time. 
+			StringBuilder sb = null;
+			int pos = 0;
+			int counter = 0;
+			while (pos < frag.subtreegpres.length) {
+				if (sb == null) {
+					sb = new StringBuilder(size * 10);
+					sb.append("xquery for $pre in (");
+				}
+
+				sb.append(frag.subtreegpres[pos] + ",");
+
+				if (++counter == size || pos == frag.subtreegpres.length - 1) {
+					sb.setCharAt(sb.length() - 1, ')');
+					sb.append(String.format(" return db:open-pre('%s', $pre)", bxhelper.db));
+					// System.out.println(sb);
+					fw.append(bxhelper.execute(sb.toString()));
+					// fw.flush(); // it does not work.
+					fw.close();
+					fw = new FileWriter(path, true);
+					sb = null;
+				} 
+				pos++;
 			}
 
-			// subtrees
-			for (int i = 0; i < frag.subtrees.size(); i++)
-				fw.append(bxhelper.getNodeContent(frag.subtrees.get(i).toPREString()));
+			// for (int i = 0; i < frag.subtreegpres.length; i++)
+			// fw.append(bxhelper.getNodeContent(frag.subtreegpres[i] + ""));
 
 			// close roots
 			for (int i = frag.rootPath.size() - 1; i > 0; i--) {
@@ -115,7 +143,7 @@ public class FProcessor {
 
 			// subtrees
 			for (int i = 0; i < frag.subtrees.size(); i++)
-				fw.append(bxhelper.getNodeContent(frag.subtrees.get(i).toPREString()));
+				fw.append(bxhelper.getNodeContent(frag.subtrees.get(i).gpre + ""));
 
 			bxhelper.writeTrees(frag.subtrees, fw);
 
@@ -140,9 +168,9 @@ public class FProcessor {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getRootInfo(MergedTree[] trees, FragmentInfo[] links) throws Exception {
+	public String getRootInfo(MergedTree[] trees, FragmentIndex[] links) throws Exception {
 		ArrayList<String> pathlist = new ArrayList<String>();
-		for (FragmentInfo lk : links) {
+		for (FragmentIndex lk : links) {
 			String path = trees[lk.mid].fragments.get(lk.mrank).getPathToRoot();
 			if (pathlist.size() == 0 || !pathlist.get(pathlist.size() - 1).equals(path))
 				pathlist.add(path);

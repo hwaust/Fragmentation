@@ -8,8 +8,8 @@ import fragmentation.Node;
 
 public class BaseXHelper {
 
-	String server;
-	String db;
+	public String server;
+	public String db;
 	BXClient bx;
 
 	// the max number of children of a node can be processed at a time.
@@ -37,7 +37,7 @@ public class BaseXHelper {
 	}
 
 	public String execute(String query) throws Exception {
-		return bx.execute("xquery " + query);
+		return bx.execute(query);
 	}
 
 	public List<Node> getChildren(Node node) throws Exception {
@@ -74,8 +74,6 @@ public class BaseXHelper {
 				}
 			}
 		}
-
-		System.out.println("getChildren: output nodes.size = " + nodes.size());
 
 		return nodes;
 	}
@@ -156,4 +154,5 @@ public class BaseXHelper {
 		return nodes;
 	}
 
+ 
 }

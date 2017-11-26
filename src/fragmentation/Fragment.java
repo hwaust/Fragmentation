@@ -1,6 +1,11 @@
 package fragmentation;
 
+import java.io.File;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import basex.common;
@@ -22,6 +27,22 @@ public class Fragment {
 	public int fid;
 
 	/**
+	 * The id of merged tree.
+	 */
+	public int mid;
+
+	/**
+	 * The position in the merged tree.
+	 */
+	public int mrank;
+
+	/**
+	 * Number of all nodes in this fragment, including element nodes, attribute
+	 * nodes and content nodes.
+	 */
+	public int size;
+
+	/**
 	 * The PRE index on the pruned tree.
 	 */
 	public int gpre;
@@ -30,12 +51,6 @@ public class Fragment {
 	 * the PRE value of the current node on the merged tree.
 	 */
 	public int mpre;
-
-	/**
-	 * Number of all nodes in this fragment, including element nodes, attribute
-	 * nodes and content nodes.
-	 */
-	public int size;
 
 	/**
 	 * A path from subtree to the root of the whole tree.
@@ -163,6 +178,10 @@ public class Fragment {
 					.reduce((result, current) -> result + ";" + current).get();
 			sb.append(path + ":" + f.fid + "\n");
 		}
+
+		if (sb.length() > 0)
+			sb.deleteCharAt(sb.length() - 1); // remove last '\n'.
+
 		common.saveStringtoFile(sb.toString(), fullPath);
 	}
 
@@ -185,6 +204,107 @@ public class Fragment {
 		subtrees.clear();
 
 		// System.gc();
+	}
+
+	public static void writeSubtreesGPREs(ArrayList<Fragment> fs, String filepath) throws Exception {
+		RandomAccessFile rf = new RandomAccessFile(new File(filepath), "rw");
+		for (Fragment f : fs) {
+			rf.writeInt(f.subtreegpres.length);
+			byte[] bts = new byte[f.subtreegpres.length * 4];
+			for (int i = 0; i < f.subtreegpres.length; i++) {
+				int a = f.subtreegpres[i];
+				bts[i * 4 + 0] = (byte) ((a >> 24) & 0xFF);
+				bts[i * 4 + 1] = (byte) ((a >> 16) & 0xFF);
+				bts[i * 4 + 2] = (byte) ((a >> 8) & 0xFF);
+				bts[i * 4 + 3] = (byte) ((a >> 0) & 0xFF);
+			}
+			rf.write(bts);
+		}
+		rf.close();
+	}
+
+	public static ArrayList<Fragment> readFragmentList(String path) throws Exception {
+		ArrayList<Fragment> fs = new ArrayList<Fragment>(); 
+		
+		// read fragment index
+		for (String s : Files.readAllLines(Paths.get(path + File.separator + "fragmentindex.txt"))) {
+			Fragment f = Fragment.parse(s);
+			if (f != null)
+				fs.add(f);
+		}
+
+		// read subtrees
+		List<int[]> its = readIntArray(path + File.separator + "subtreeroots.bin");
+		for (int i = 0; i < its.size(); i++)
+			fs.get(i).subtreegpres = its.get(i);
+
+		// read path info. format: 1:site;2:regions;561994:namerica:2
+		List<String> lines = Files.readAllLines(Paths.get(path + File.separator + "prunedtree.txt"));
+		for (int i = 0; i < lines.size(); i++) {
+			fs.get(i).rootPath = new ArrayList<Node>();
+			for (String s : lines.get(i).split(";")) {
+				Node n = new Node();
+				n.gpre = Integer.parseInt(s.split(":")[0]);
+				n.name = s.split(":")[1];
+				fs.get(i).rootPath.add(n);
+			}
+		}
+
+		return fs;
+	}
+
+	static List<int[]> readIntArray(String filepath) throws Exception {
+		List<int[]> list = new ArrayList<>();
+
+		RandomAccessFile rf = new RandomAccessFile(new File(filepath), "rw");
+		try {
+			// when encounter an exception, it means the reading reaches the end of file
+			// and the loop will terminate.
+			while (true) {
+				int len = rf.readInt();
+
+				byte[] bts = new byte[len * 4];
+				rf.read(bts);
+
+				int[] its = new int[len];
+				for (int i = 0; i < len; i++)
+					its[i] = ((bts[i * 4 + 0] & 0xFF) << 24) + ((bts[i * 4 + 1] & 0xFF) << 16)
+							+ ((bts[i * 4 + 2] & 0xFF) << 8) + (bts[i * 4 + 3] & 0xFF);
+
+				list.add(its);
+			}
+		} catch (Exception e) {
+		}
+		rf.close();
+
+		return list;
+	}
+
+	/**
+	 * Initialize a fragment from a formated string. Example:
+	 * fid=0,mid=4,mrank=0,size=249487,gpre=3,mpre=3
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static Fragment parse(String s) {
+		if (s == null || s.length() == 0)
+			return null;
+
+		Fragment f = new Fragment();
+		try {
+			String[] strs = s.split(",");
+			f.fid = Integer.parseInt(strs[0].split("=")[1]);
+			f.mid = Integer.parseInt(strs[1].split("=")[1]);
+			f.mrank = Integer.parseInt(strs[2].split("=")[1]);
+			f.size = Integer.parseInt(strs[3].split("=")[1]);
+			f.gpre = Integer.parseInt(strs[4].split("=")[1]);
+			f.mpre = Integer.parseInt(strs[5].split("=")[1]);
+		} catch (Exception e) {
+			f = null;
+		}
+
+		return f;
 	}
 
 }

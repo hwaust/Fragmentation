@@ -1,6 +1,7 @@
 package fragmentation;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * A merged tree is a tree that formed by merging a list of fragments.
@@ -25,6 +26,14 @@ public class MergedTree {
 		this.fragments = new ArrayList<Fragment>();
 	}
 
+	public static MergedTree[] createTrees(ArrayList<Fragment> fs, int ns) { 
+		MergedTree[] trees = new MergedTree[ns];
+		for (int i = 0; i < trees.length; i++)
+			trees[i] = new MergedTree(i);
+		fs.forEach(f -> trees[f.mid].fragments.add(f));
+		return trees;
+	}
+
 	/**
 	 * generate N merged trees from a list of fragments.
 	 * 
@@ -32,8 +41,11 @@ public class MergedTree {
 	 * @param N
 	 * @return
 	 */
-	public static MergedTree[] createTrees(ArrayList<Fragment> fs, int N) {
-
+	public static MergedTree[] createTrees(ArrayList<Fragment> fragments, int N, int seed) {
+		// replicate fragments for shuffling to avoid changing the original order.
+		ArrayList<Fragment> fs = new ArrayList<>();
+		fragments.forEach(fs::add);
+		java.util.Collections.shuffle(fs, new Random(seed));
 
 		// declare and initialize a merged tree array
 		MergedTree[] trees = new MergedTree[N];
@@ -63,13 +75,13 @@ public class MergedTree {
 		return trees;
 	}
 
-	public static FragmentInfo[] getInfo(MergedTree[] trees) {
-		FragmentInfo[] fis = new FragmentInfo[MergedTree.getTreeFragmentSize(trees)];
+	public static FragmentIndex[] getInfo(MergedTree[] trees) {
+		FragmentIndex[] fis = new FragmentIndex[MergedTree.getTreeFragmentSize(trees)];
 
 		for (int i = 0; i < trees.length; i++) {
 			for (int j = 0; j < trees[i].fragments.size(); j++) {
 				Fragment f = trees[i].fragments.get(j);
-				fis[f.fid] = new FragmentInfo(f.fid, trees[i].mid, j, f.size, f.gpre, f.mpre);
+				fis[f.fid] = new FragmentIndex(f.fid, trees[i].mid, j, f.size, f.gpre, f.mpre);
 			}
 		}
 
