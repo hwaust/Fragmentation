@@ -1,5 +1,6 @@
 package basex;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,27 +51,29 @@ public class BXClient extends BaseXClient {
 		return qr;
 	}
 
-	public void executeToFile(final String command, final FileWriter fw) throws IOException {
+	// removed private
+	private static QueryResult_IntStringList recieve(final InputStream input) throws IOException {
+		return new PreValueReceiver().process(input);
+	}
+
+	public void execute(String command, FileWriter fw) throws Exception {
 		send(command);
 		int b = 0;
-		int buffsize = 1024 * 1024;
-		int count = 0;
+//		int buffsize = 10 * 1024 * 1024;
+//		int count = 0;
+		
+		BufferedWriter bw = new BufferedWriter(fw, 1024 * 1024); 
 		while ((b = in.read()) > 0) {
-			fw.write(b);
-			if (count++ > buffsize) {
-				fw.flush();
-				count = 0;
-			}
+			bw.write(b);
+//			if (count++ > buffsize) {
+//				fw.flush();
+//				count = 0;
+//			}
 		}
 
 		info = receive();
 		if (!ok())
 			throw new IOException(info);
-	}
-
-	// removed private
-	private static QueryResult_IntStringList recieve(final InputStream input) throws IOException {
-		return new PreValueReceiver().process(input);
 	}
 
 }

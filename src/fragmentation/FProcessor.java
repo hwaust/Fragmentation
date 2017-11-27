@@ -86,7 +86,7 @@ public class FProcessor {
 			} 
 
 			// Save main contnet of subtrees.
-			int size = 1000; // maximun size of subtrees that being process at a time. 
+			int size = 500; // maximun size of subtrees that being process at a time. 
 			StringBuilder sb = null;
 			int pos = 0;
 			int counter = 0;
@@ -101,8 +101,9 @@ public class FProcessor {
 				if (++counter == size || pos == frag.subtreegpres.length - 1) {
 					sb.setCharAt(sb.length() - 1, ')');
 					sb.append(String.format(" return db:open-pre('%s', $pre)", bxhelper.db));
-					// System.out.println(sb);
-					fw.append(bxhelper.execute(sb.toString()));
+					// System.out.println(sb); 
+					// System.out.println("sb.len=" + sb.length());
+					bxhelper.execute(sb.toString(), fw); 
 					// fw.flush(); // it does not work.
 					fw.close();
 					fw = new FileWriter(path, true);
@@ -124,42 +125,7 @@ public class FProcessor {
 		fw.close();
 		bxhelper.close();
 	}
-
-	public void makeXDocs1(MergedTree tree, String path) throws Exception {
-		bxhelper.open();
-
-		FileWriter fw = new FileWriter(path);
-		String rootName = bxhelper.getNodeName("1");
-		fw.write("<" + rootName + ">");
-
-		// write fragments of the current merged tree into stream
-		for (Fragment frag : tree.fragments) {
-			// root path
-			for (int i = 1; i < frag.rootPath.size(); i++) {
-				Node ni = frag.rootPath.get(i);
-				ni.name = bxhelper.getNodeName(ni.gpre + "");
-				fw.write("<" + ni.name + ">");
-			}
-
-			// subtrees
-			for (int i = 0; i < frag.subtrees.size(); i++)
-				fw.append(bxhelper.getNodeContent(frag.subtrees.get(i).gpre + ""));
-
-			bxhelper.writeTrees(frag.subtrees, fw);
-
-			// String.format("xquery db:open-pre('%s', %s)%s", database, pre, query)
-
-			// close roots
-			for (int i = frag.rootPath.size() - 1; i > 0; i--) {
-				fw.write("</" + frag.rootPath.get(i).name + ">");
-			}
-		}
-		fw.write("</" + rootName + ">");
-
-		fw.close();
-		bxhelper.close();
-	}
-
+ 
 	/**
 	 * Return the structure of the root part.
 	 * 

@@ -111,15 +111,15 @@ public class BaseXHelper {
 
 	}
 
-	public void writeTrees(ArrayList<Node> subtrees, FileWriter fw) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("xquery for $pre in (");
-		for (int i = 0; i < subtrees.size(); i++)
-			sb.append(subtrees.get(i).gpre + ",");
-		sb.setCharAt(sb.length() - 1, ')');
-		sb.append(String.format("return db:open-pre('%s', $pre)", db));
-		bx.executeToFile(sb.toString(), fw);
-	}
+//	public void writeTrees(ArrayList<Node> subtrees, FileWriter fw) throws Exception {
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("xquery for $pre in (");
+//		for (int i = 0; i < subtrees.size(); i++)
+//			sb.append(subtrees.get(i).gpre + ",");
+//		sb.setCharAt(sb.length() - 1, ')');
+//		sb.append(String.format("return db:open-pre('%s', $pre)", db));
+//		bx.executeToFile(sb.toString(), fw);
+//	}
 
 	public int getRootSize() throws Exception {
 		return Integer.parseInt(bx.execute("xquery count(db:open('" + db + "')//*)"));
@@ -152,6 +152,10 @@ public class BaseXHelper {
 		}
 
 		return nodes;
+	}
+
+	public void execute(String query, FileWriter fw) throws Exception{ 
+		bx.execute(query, fw);
 	}
 
  
