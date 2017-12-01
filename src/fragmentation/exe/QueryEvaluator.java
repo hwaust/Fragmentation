@@ -79,14 +79,15 @@ public class QueryEvaluator {
 			for (int j = 0; j < rd.pres.size(); j++) {
 				while (pos < trees[i].fragments.size() - 1 && rd.pres.get(j) > trees[i].fragments.get(pos + 1).mpre)
 					pos++;
-				rd.results.get(pos).add(pos + ":" + rd.pres.get(j) + "\t" + rd.values.get(j));
+				rd.results.get(pos).add(rd.values.get(j));
 			}
 
 			// while (pos < mpres.size() - 1 && gpres.get(i) > mpres.get(pos + 1))
 
 			StringBuilder sb = new StringBuilder();
 			for (ArrayList<String> arr : rd.results)
-				sb.append(arr + "\n");
+				for (String s : arr)
+					sb.append(s + "\n");
 			common.saveStringtoFile(sb.toString(), outfolder + "p2_output_" + i + ".txt");
 		}
 

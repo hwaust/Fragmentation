@@ -53,7 +53,7 @@ public class PreValueReceiver {
 					input.read();
 				} else {
 					isPreEnter = true;
-					sb.append("\t");
+					sb.append("\r\n");
 				}
 			} else {
 				isPreEnter = false;
@@ -95,8 +95,10 @@ public class PreValueReceiver {
 					}
 					its.add(value);
 					value = 0;
-				} else
+				} else {
 					isPreEnter = true;
+					sb.append("\n");
+				}
 			} else {
 				isPreEnter = false;
 				sb.append((char) b);
