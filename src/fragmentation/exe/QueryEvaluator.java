@@ -30,7 +30,6 @@ public class QueryEvaluator {
 		query = QueryPlans.getQueryPlan(fc.querykey).first();
 
 		// retrieve PRE values of the first level children of the root from all servers.
-		BXClient[] bxs = new BXClient[trees.length];
 
 		// process queries and return pre-formatted intermediate results.
 		System.out.println("processing query...");
@@ -43,8 +42,11 @@ public class QueryEvaluator {
 		}
 
 		PExecutor[] pes = new PExecutor[cmds.length];
-		for (int i = 0; i < pes.length; i++)
+		BXClient[] bxs = new BXClient[trees.length];
+		for (int i = 0; i < pes.length; i++) {
+			bxs[i] = BXClient.open(fc.ips[i]);
 			pes[i] = new PExecutor(bxs[i], 1, cmds[i]);
+		}
 
 		if (isSerial) {
 			for (PExecutor pe : pes)
@@ -53,18 +55,26 @@ public class QueryEvaluator {
 			MyRunnable.parallelRun(pes);
 		}
 
+		QueryResult_IntStringList[] rs = new QueryResult_IntStringList[trees.length];
+
+		for (int i = 0; i < rs.length; i++) {
+			rs[i] = (QueryResult_IntStringList) pes[i].sr;
+			System.out.println(rs[i].exetime);
+		}
+
 		// map results to fragments by the original PRE values
 		long t2 = System.currentTimeMillis();
-		for (int i = 0; i < trees.length; i++) {
-			QueryResult_IntStringList rd = (QueryResult_IntStringList) pes[i].sr;
-			rd.initResults(trees[i].fragments.size());
-			int pos = 0;
-			for (int j = 0; j < rd.pres.size(); j++) {
-				while (rd.pres.get(j) > trees[i].fragments.get(j).mpre && pos < trees[i].fragments.size() - 1)
-					pos++;
-				rd.results.get(pos).add(rd.values.get(j));
-			}
-		}
+		// for (int i = 0; i < trees.length; i++) {
+		// QueryResult_IntStringList rd = (QueryResult_IntStringList) pes[i].sr;
+		// rd.initResults(trees[i].fragments.size());
+		// int pos = 0;
+		// for (int j = 0; j < rd.pres.size(); j++) {
+		// while (rd.pres.get(j) > trees[i].fragments.get(j).mpre && pos <
+		// trees[i].fragments.size() - 1)
+		// pos++;
+		// rd.results.get(pos).add(rd.values.get(j));
+		// }
+		// }
 
 		//
 		// // process the final results.

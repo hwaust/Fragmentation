@@ -19,6 +19,11 @@ public class QueryResult_IntStringList extends QueryResult {
 		}
 	}
 
+	/**
+	 * The length is the same as Ns
+	 * 
+	 * @param length
+	 */
 	public void initResults(int length) {
 		results = new ArrayList<ArrayList<String>>();
 		for (int i = 0; i < length; i++)
