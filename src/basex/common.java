@@ -222,6 +222,30 @@ public class common {
 		System.out.printf("used = %s, free = %s, total = %s.", common.formatFileSize(mused),
 				common.formatFileSize(mfree), common.formatFileSize(mtotal));
 	}
+
+
+	public static int FormatedStringToInt(String s) {
+		int value = 0;
+		// to support abbreviations, such as 20M, 300K, etc.
+		if (!Character.isDigit(s.charAt(s.length() - 1))) {
+			switch (s.charAt(s.length() - 1)) {
+			case 'm':
+			case 'M':
+				value = 1000 * 1000 * Integer.parseInt(s.substring(0, s.length() - 1));
+				break;
+			case 'k':
+			case 'K':
+				value = 1000 * Integer.parseInt(s.substring(0, s.length() - 1));
+				break;
+			}
+		} else
+			value = Integer.parseInt(s);
+		return value;
+	}
+
+	public static String IntToFormatedString(int v) {
+		return v > 1000000 ? v / 1000000 + "M" : v > 1000 ? v / 1000 + "K" : v + "";
+	}
  
 
 }

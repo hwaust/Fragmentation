@@ -82,8 +82,9 @@ public class FProcessor {
 			// root path
 			for (int i = 1; i < frag.rootPath.size(); i++) {
 				Node ni = frag.rootPath.get(i);
-				fw.write("<" + ni.name + ">");
-			} 
+				fw.write("<" + ni.name + ">"); 
+			}  
+			
 
 			// Save main contnet of subtrees.
 			int size = 500; // maximun size of subtrees that being process at a time. 
@@ -97,6 +98,9 @@ public class FProcessor {
 				}
 
 				sb.append(frag.subtreegpres[pos] + ",");
+				
+				if(frag.subtreegpres[pos] == 269138)
+					System.out.println("Here.");
 
 				if (++counter == size || pos == frag.subtreegpres.length - 1) {
 					sb.setCharAt(sb.length() - 1, ')');
@@ -105,8 +109,8 @@ public class FProcessor {
 					// System.out.println("sb.len=" + sb.length());
 					bxhelper.execute(sb.toString(), fw); 
 					// fw.flush(); // it does not work.
-					fw.close();
-					fw = new FileWriter(path, true);
+//					fw.close();
+//					fw = new FileWriter(path, true);
 					sb = null;
 				} 
 				pos++;
@@ -117,8 +121,8 @@ public class FProcessor {
 
 			// close roots
 			for (int i = frag.rootPath.size() - 1; i > 0; i--) {
-				fw.write("</" + frag.rootPath.get(i).name + ">");
-			}
+				fw.write("</" + frag.rootPath.get(i).name + ">"); 
+			} 
 		}
 		fw.write("</" + rootName + ">");
 

@@ -10,7 +10,7 @@ import fragmentation.MergedTree;
 public class TreeExporter {
 
 	public static void main(String[] args) throws Exception {
-		args = args.length == 0 ? "-db,xmark10,-ms,200000".split(",") : args;
+		args = args.length == 0 ? "-db,xmark1,-ms,20K,-n,4".split(",") : args;
 
 		FContext fc = FContext.parse(args);
 		FProcessor proc = new FProcessor(fc);
@@ -19,7 +19,7 @@ public class TreeExporter {
 		System.out.println("Ver.1.0: " + fc + "Loading...");
 		long t1 = System.currentTimeMillis();
 		ArrayList<Fragment> fs = Fragment.readFragmentList(fc.getFullPath(""));
-		MergedTree[] trees = MergedTree.createTrees(fs, fc.Ns);
+		MergedTree[] trees = MergedTree.createTrees(fs);
 
 		/**************** Step 2: output data ***************/
 		System.out.println("Saving merged trees and related information...");

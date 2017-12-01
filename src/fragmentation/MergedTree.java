@@ -26,8 +26,12 @@ public class MergedTree {
 		this.fragments = new ArrayList<Fragment>();
 	}
 
-	public static MergedTree[] createTrees(ArrayList<Fragment> fs, int ns) { 
-		MergedTree[] trees = new MergedTree[ns];
+	public static MergedTree[] createTrees(ArrayList<Fragment> fs) {
+		int ns = 0;
+		for (Fragment f : fs)
+			ns = f.mid > ns ? f.mid : ns;
+
+		MergedTree[] trees = new MergedTree[ns + 1];
 		for (int i = 0; i < trees.length; i++)
 			trees[i] = new MergedTree(i);
 		fs.forEach(f -> trees[f.mid].fragments.add(f));
@@ -55,6 +59,10 @@ public class MergedTree {
 		// randomize
 		for (int i = 0; i < fs.size(); i++)
 			trees[i % N].fragments.add(fs.get(i));
+
+		// arrange fragments of a merged tree in order of fid
+		for (int i = 0; i < trees.length; i++)
+			java.util.Collections.sort(trees[i].fragments, (a, b) -> a.fid > b.fid ? 1 : -1);
 
 		// compute pre index
 		for (MergedTree tree : trees) {

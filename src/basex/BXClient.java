@@ -58,19 +58,13 @@ public class BXClient extends BaseXClient {
 
 	public void execute(String command, FileWriter fw) throws Exception {
 		send(command);
-		int b = 0;
-//		int buffsize = 10 * 1024 * 1024;
-//		int count = 0;
+		int b = 0; 
 		
 		BufferedWriter bw = new BufferedWriter(fw, 1024 * 1024); 
 		while ((b = in.read()) > 0) {
-			bw.write(b);
-//			if (count++ > buffsize) {
-//				fw.flush();
-//				count = 0;
-//			}
-		}
-
+			bw.write(b); 
+		} 
+		bw.flush();
 		info = receive();
 		if (!ok())
 			throw new IOException(info);

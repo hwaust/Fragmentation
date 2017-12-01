@@ -22,8 +22,6 @@ public class DBInfo {
 	}
 
 	public static DBInfo[] parse(String[] args) throws Exception {
-		if (args == null || args.length < 2)
-			throw new Exception("The length of arguments do equal to 2.");
 
 		// use lab to represent "172.21.52"
 		String ip = args[0].replace("lab", "172.21.52.");
@@ -55,19 +53,20 @@ public class DBInfo {
 			for (int i = 0; i < dbs.length; i++)
 				dbs[i] = new DBInfo(ips[i], "frag_" + i, dir);
 		}
-
 		return dbs;
 	}
 
+	
 	public void check() throws Exception {
 
 	}
 
 	/**
 	 * Return create db command.
+	 * 
 	 * @return
 	 */
 	public String getCreateDbCmd() {
-		return 	String.format("create db %s %s", dbname, getFullpath());
+		return String.format("create db %s %s", dbname, getFullpath());
 	}
 }

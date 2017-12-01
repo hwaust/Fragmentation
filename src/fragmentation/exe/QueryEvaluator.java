@@ -1,14 +1,15 @@
 package fragmentation.exe;
 
-import java.io.File;
+import java.util.ArrayList;
+
 import basex.BXClient;
-import basex.DBInfo;
 import basex.MyRunnable;
 import basex.PExecutor;
 import basex.QueryPlans;
 import basex.QueryResult_IntStringList;
-import basex.common;
-import fragmentation.FragmentIndex;
+import fragmentation.FContext;
+import fragmentation.Fragment;
+import fragmentation.MergedTree;
 
 public class QueryEvaluator {
 	static boolean isSerial = false;
@@ -16,46 +17,29 @@ public class QueryEvaluator {
 	public static void main(String[] args) throws Exception {
 		// for test
 		if (args.length == 0)
-			args = new String[] { "#4", "d:\\data\\fragments\\xmark0.1_hw_4_1000", "xm3.org" };
+			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3.org", "-f",
+					"d:\\data\\fragments\\xmark1_4_20K_20171126" };
 
-		DBInfo[] dbs = DBInfo.parse(new String[] { args[0], "" });
+		FContext fc = FContext.parse(args);
+		System.out.println(fc.toString1());
+
+		ArrayList<Fragment> fs = Fragment.readFragmentList(fc.datafolder);
+		MergedTree[] trees = MergedTree.createTrees(fs);
+
 		String query = "/site/open_auctions/open_auction/bidder/increase";
-		query = QueryPlans.getQueryPlan(args[2]).first();
+		query = QueryPlans.getQueryPlan(fc.querykey).first();
 
 		// retrieve PRE values of the first level children of the root from all servers.
-		BXClient[] bxs = new BXClient[dbs.length];
-		int[][] pres = new int[dbs.length][];
-		for (int i = 0; i < dbs.length; i++) {
-			bxs[i] = BXClient.open(dbs[i].ip);
-			bxs[i].execute("set mainmem on");
-			String cmd = String.format("xquery for $node in db:open('%s')/site/* return db:node-pre($node) ",
-					dbs[i].dbname);
-			String result = bxs[i].execute(cmd);
-			String[] prevalues = result.split(common.getLinebreak());
-			pres[i] = new int[prevalues.length];
-			for (int j = 0; j < prevalues.length; j++) {
-				pres[i][j] = Integer.parseInt(prevalues[j]);
-			}
-		}
-
-		// process links
-		FragmentIndex[][] linkss = new FragmentIndex[dbs.length][];
-		for (int i = 0; i < linkss.length; i++)
-			linkss[i] = new FragmentIndex[pres[i].length];
-		FragmentIndex[] links = FragmentIndex.readLinks(args[1] + File.separator + "linkinfo.txt");
-		for (FragmentIndex link : links) {
-			link.mpre = pres[link.mid][link.mrank];
-			linkss[link.mid][link.mrank] = link;
-		}
+		BXClient[] bxs = new BXClient[trees.length];
 
 		// process queries and return pre-formatted intermediate results.
 		System.out.println("processing query...");
 		long t1 = System.currentTimeMillis();
 
-		String[] cmds = new String[dbs.length];
-		for (int i = 0; i < dbs.length; i++) {
+		String[] cmds = new String[trees.length];
+		for (int i = 0; i < cmds.length; i++) {
 			cmds[i] = String.format("xquery for $node in db:open('%s')%s return (('', db:node-pre($node)), $node)",
-					dbs[i].dbname, query);
+					fc.dbs[i], query);
 		}
 
 		PExecutor[] pes = new PExecutor[cmds.length];
@@ -71,26 +55,27 @@ public class QueryEvaluator {
 
 		// map results to fragments by the original PRE values
 		long t2 = System.currentTimeMillis();
-		for (int i = 0; i < dbs.length; i++) {
+		for (int i = 0; i < trees.length; i++) {
 			QueryResult_IntStringList rd = (QueryResult_IntStringList) pes[i].sr;
-			rd.initResults(linkss[i].length);
+			rd.initResults(trees[i].fragments.size());
 			int pos = 0;
 			for (int j = 0; j < rd.pres.size(); j++) {
-				while (rd.pres.get(j) > linkss[i][pos].mpre && pos < linkss[i].length - 1)
+				while (rd.pres.get(j) > trees[i].fragments.get(j).mpre && pos < trees[i].fragments.size() - 1)
 					pos++;
 				rd.results.get(pos).add(rd.values.get(j));
 			}
 		}
 
-		// process the final results.
-		int size = 0;
-		for (int i = 0; i < linkss.length; i++)
-			size += linkss[i].length;
-		FragmentIndex[] alllinks = new FragmentIndex[size];
-
-		for (int i = 0; i < linkss.length; i++)
-			for (int j = 0; j < linkss[i].length; j++)
-				alllinks[linkss[i][j].fid] = linkss[i][j];
+		//
+		// // process the final results.
+		// int size = 0;
+		// for (int i = 0; i < linkss.length; i++)
+		// size += linkss[i].length;
+		// FragmentIndex[] alllinks = new FragmentIndex[size];
+		//
+		// for (int i = 0; i < linkss.length; i++)
+		// for (int j = 0; j < linkss[i].length; j++)
+		// alllinks[linkss[i][j].fid] = linkss[i][j];
 		long t3 = System.currentTimeMillis();
 
 		System.out.printf("Completed. Execution time: %d ms, meger time: %d ms. \n", t2 - t1, t3 - t2);
