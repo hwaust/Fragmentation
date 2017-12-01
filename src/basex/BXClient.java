@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 
 public class BXClient extends BaseXClient {
+	public int tagid;
+	
 	Charset encoding = Charset.forName("UTF-8");
 
 	public static BXClient open(String ip) throws IOException {

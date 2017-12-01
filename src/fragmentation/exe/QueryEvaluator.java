@@ -1,15 +1,12 @@
 package fragmentation.exe;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
-
 import basex.BXClient;
-import basex.MyRunnable;
 import basex.PExecutor;
 import basex.QueryPlans;
 import basex.QueryResult_IntStringList;
 import basex.common;
-import fragmentation.FContext;
 import fragmentation.Fragment;
 import fragmentation.MergedTree;
 import fragmentation.QContext;
@@ -25,6 +22,12 @@ public class QueryEvaluator {
 
 		QContext qc = QContext.parse(args);
 		System.out.println(qc);
+
+		String outfolder = qc.datafolder + File.separator + "output_" + qc.querykey.split("\\.")[0] + File.separator;
+
+		File outdir = new File(outfolder);
+		if (!outdir.exists())
+			outdir.mkdirs();
 
 		ArrayList<Fragment> fs = Fragment.readFragmentList(qc.datafolder);
 		MergedTree[] trees = MergedTree.createTrees(fs);
@@ -42,20 +45,22 @@ public class QueryEvaluator {
 					qc.dbs[i], query);
 		}
 
+		common.saveStringtoFile(String.join("\n", cmds), outfolder + "p1_input_queries.txt");
+
 		PExecutor[] pes = new PExecutor[cmds.length];
 		BXClient[] bxs = new BXClient[trees.length];
 		for (int i = 0; i < pes.length; i++) {
 			bxs[i] = BXClient.open(qc.ips[i]);
+			bxs[i].tagid = i;
 			pes[i] = new PExecutor(bxs[i], 1, cmds[i]);
 		}
 
-		if (!isSerial) {
-			for (PExecutor pe : pes)
-				pe.run();
-		} else {
-			MyRunnable.parallelRun(pes);
+		for (int i = 0; i < bxs.length; i++) {
+			common.saveStringtoFile(bxs[i].execute(cmds[i]), outfolder + "p1_output_" + i + ".txt");
 		}
 
+		for (PExecutor pe : pes)
+			pe.run();
 		QueryResult_IntStringList[] rs = new QueryResult_IntStringList[trees.length];
 		for (int i = 0; i < rs.length; i++) {
 			rs[i] = (QueryResult_IntStringList) pes[i].sr;
@@ -75,18 +80,12 @@ public class QueryEvaluator {
 				rd.results.get(pos).add(pos + ":" + rd.pres.get(j) + "\t" + rd.values.get(j));
 			}
 
- 
-  
+			// while (pos < mpres.size() - 1 && gpres.get(i) > mpres.get(pos + 1))
 
-	//				while (pos < mpres.size() - 1 && gpres.get(i) > mpres.get(pos + 1))
-	
- 
-			
-			
 			StringBuilder sb = new StringBuilder();
 			for (ArrayList<String> arr : rd.results)
 				sb.append(arr + "\n");
-			common.saveStringtoFile(sb.toString(), "c:\\data\\tree" + i + ".txt");
+			common.saveStringtoFile(sb.toString(), outfolder + "p2_output_" + i + ".txt");
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -95,11 +94,12 @@ public class QueryEvaluator {
 			arr.forEach(s -> sb.append(s + "\n"));
 		}
 
-		common.saveStringtoFile(sb.toString(), "c:\\data\\result.txt");
+		common.saveStringtoFile(sb.toString(), outfolder + "p3_out_finalresult.txt");
 
 		long t3 = System.currentTimeMillis();
 
-		System.out.printf("Completed. Execution time: %d ms, meger time: %d ms. \n", t2 - t1, t3 - t2);
+		System.out.printf("Completed. Execution time: %d ms, meger time: %d ms. Results are saved to: %s\n", t2 - t1,
+				t3 - t2, outfolder);
 	}
 
 }

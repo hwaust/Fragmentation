@@ -57,8 +57,10 @@ public class PreValueReceiver {
 					its.add(value);
 					value = 0;
 					input.read();
-				} else
+				} else {
 					isPreEnter = true;
+					sb.append("\t");
+				}
 			} else {
 				isPreEnter = false;
 				sb.append((char) b);
