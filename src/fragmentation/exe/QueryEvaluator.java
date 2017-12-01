@@ -11,6 +11,7 @@ import basex.common;
 import fragmentation.FContext;
 import fragmentation.Fragment;
 import fragmentation.MergedTree;
+import fragmentation.QContext;
 
 public class QueryEvaluator {
 	static boolean isSerial = false;
@@ -21,14 +22,14 @@ public class QueryEvaluator {
 			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3.org", "-f",
 					"d:\\data\\fragments\\xmark1_4_20K_20171126" };
 
-		FContext fc = FContext.parse(args);
-		System.out.println(fc.toString1());
+		QContext qc = QContext.parse(args);
+		System.out.println(qc);
 
-		ArrayList<Fragment> fs = Fragment.readFragmentList(fc.datafolder);
+		ArrayList<Fragment> fs = Fragment.readFragmentList(qc.datafolder);
 		MergedTree[] trees = MergedTree.createTrees(fs);
 
 		String query = "/site/open_auctions/open_auction/bidder/increase";
-		query = QueryPlans.getQueryPlan(fc.querykey).first();
+		query = QueryPlans.getQueryPlan(qc.querykey).first();
 
 		// process queries and return pre-formatted intermediate results.
 		System.out.println("processing query...");
@@ -37,13 +38,13 @@ public class QueryEvaluator {
 		String[] cmds = new String[trees.length];
 		for (int i = 0; i < cmds.length; i++) {
 			cmds[i] = String.format("xquery for $node in db:open('%s')%s return (('', db:node-pre($node)), $node)",
-					fc.dbs[i], query);
+					qc.dbs[i], query);
 		}
 
 		PExecutor[] pes = new PExecutor[cmds.length];
 		BXClient[] bxs = new BXClient[trees.length];
 		for (int i = 0; i < pes.length; i++) {
-			bxs[i] = BXClient.open(fc.ips[i]);
+			bxs[i] = BXClient.open(qc.ips[i]);
 			pes[i] = new PExecutor(bxs[i], 1, cmds[i]);
 		}
 
