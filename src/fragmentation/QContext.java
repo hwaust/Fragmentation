@@ -85,7 +85,7 @@ public class QContext {
 			int start = Integer.parseInt(addresses[3]);
 			ips = new String[Integer.parseInt(ip.split(":")[2])];
 			for (int i = 0; i < ips.length; i++)
-				ips[i] = start + i + "";
+				ips[i] = addresses[0] + "." + addresses[1] + "." + addresses[2] + "." + (start + i);
 		}
 		// Format 1: ip;ip;...;ip
 		else {

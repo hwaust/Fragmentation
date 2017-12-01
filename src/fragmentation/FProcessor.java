@@ -18,7 +18,7 @@ public class FProcessor {
 	}
 
 	public ArrayList<Fragment> apply(Node root) throws Exception {
-		bxhelper.open(); 
+		bxhelper.open();
 		root.name = bxhelper.getNodeName(root.gpre + "");
 		root.elementSize = bxhelper.getRootSize();
 		System.out.println("root.size=" + root.elementSize);
@@ -62,8 +62,6 @@ public class FProcessor {
 		for (int i = 0; i < fragments.size(); i++)
 			fragments.get(i).fid = i;
 
-		
-		
 		System.gc();
 
 		return fragments;
@@ -76,18 +74,16 @@ public class FProcessor {
 		String rootName = bxhelper.getNodeName("1");
 		fw.write("<" + rootName + ">");
 
-		
 		// write fragments of the current merged tree into stream
 		for (Fragment frag : tree.fragments) {
 			// root path
 			for (int i = 1; i < frag.rootPath.size(); i++) {
 				Node ni = frag.rootPath.get(i);
-				fw.write("<" + ni.name + ">"); 
-			}  
-			
+				fw.write("<" + ni.name + ">");
+			}
 
 			// Save main contnet of subtrees.
-			int size = 500; // maximun size of subtrees that being process at a time. 
+			int size = 500; // maximun size of subtrees that being process at a time.
 			StringBuilder sb = null;
 			int pos = 0;
 			int counter = 0;
@@ -98,38 +94,27 @@ public class FProcessor {
 				}
 
 				sb.append(frag.subtreegpres[pos] + ",");
-				
-				if(frag.subtreegpres[pos] == 269138)
-					System.out.println("Here.");
 
 				if (++counter == size || pos == frag.subtreegpres.length - 1) {
 					sb.setCharAt(sb.length() - 1, ')');
 					sb.append(String.format(" return db:open-pre('%s', $pre)", bxhelper.db));
-					// System.out.println(sb); 
-					// System.out.println("sb.len=" + sb.length());
-					bxhelper.execute(sb.toString(), fw); 
-					// fw.flush(); // it does not work.
-//					fw.close();
-//					fw = new FileWriter(path, true);
+					bxhelper.execute(sb.toString(), fw);
 					sb = null;
-				} 
+				}
 				pos++;
 			}
-
-			// for (int i = 0; i < frag.subtreegpres.length; i++)
-			// fw.append(bxhelper.getNodeContent(frag.subtreegpres[i] + ""));
-
+			
 			// close roots
 			for (int i = frag.rootPath.size() - 1; i > 0; i--) {
-				fw.write("</" + frag.rootPath.get(i).name + ">"); 
-			} 
+				fw.write("</" + frag.rootPath.get(i).name + ">");
+			}
 		}
 		fw.write("</" + rootName + ">");
 
 		fw.close();
 		bxhelper.close();
 	}
- 
+
 	/**
 	 * Return the structure of the root part.
 	 * 

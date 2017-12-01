@@ -60,8 +60,9 @@ public class QueryEvaluator {
 			common.saveStringtoFile(bxs[i].execute(cmds[i]), outfolder + "p1_output_" + i + ".txt");
 		}
 
-		for (PExecutor pe : pes)
-			pe.run();
+		// for (PExecutor pe : pes)
+		// pe.run();
+		PExecutor.parallelRun(pes);
 
 		QueryResult_IntStringList[] rs = new QueryResult_IntStringList[trees.length];
 		for (int i = 0; i < rs.length; i++) {
