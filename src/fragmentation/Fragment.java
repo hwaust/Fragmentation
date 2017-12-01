@@ -79,12 +79,7 @@ public class Fragment {
 	}
 
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("total size=%d, ", this.size));
-		if (subtrees.size() > 0)
-			sb.append(subtrees.get(0));
-
-		return sb.toString();
+		return String.format("fid=%d,mid=%d,mpre=%d,mrank=%d,size=%d", fid, mid, mpre, mrank, size);
 	}
 
 	public Node get(int i) {
@@ -224,8 +219,8 @@ public class Fragment {
 	}
 
 	public static ArrayList<Fragment> readFragmentList(String path) throws Exception {
-		ArrayList<Fragment> fs = new ArrayList<Fragment>(); 
-		
+		ArrayList<Fragment> fs = new ArrayList<Fragment>();
+
 		// read fragment index
 		for (String s : Files.readAllLines(Paths.get(path + File.separator + "fragmentindex.txt"))) {
 			Fragment f = Fragment.parse(s);

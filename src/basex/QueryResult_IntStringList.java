@@ -20,7 +20,7 @@ public class QueryResult_IntStringList extends QueryResult {
 	}
 
 	/**
-	 * The length is the same as Ns
+	 * The length is the same as tree.fragments.size()
 	 * 
 	 * @param length
 	 */
