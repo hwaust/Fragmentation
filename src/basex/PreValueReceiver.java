@@ -1,12 +1,29 @@
 package basex;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class PreValueReceiver { 
-	
+public class PreValueReceiver {
+
+	public static void main(String[] args) throws Exception {
+		String file = "D:\\data\\output_xm2\\p1_output_2.txt";
+
+		InputStream fr = new FileInputStream(new File(file));
+
+		QueryResult_IntStringList qi = process_linux(fr);
+
+		System.out.println(qi.values);
+
+		fr.close();
+
+	}
+
 	public static QueryResult_IntStringList process_win(final InputStream input) throws IOException {
+		System.out.println("for windows.");
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
@@ -54,6 +71,7 @@ public class PreValueReceiver {
 	}
 
 	public static QueryResult_IntStringList process_linux(final InputStream input) throws IOException {
+		System.out.println("for linux.");
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
