@@ -1,6 +1,7 @@
 package fragmentation.exe;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import basex.BXClient;
 import basex.MyRunnable;
@@ -69,10 +70,23 @@ public class QueryEvaluator {
 
 			int pos = 0;
 			for (int j = 0; j < rd.pres.size(); j++) {
-				while (rd.pres.get(j) < trees[i].fragments.get(pos).mpre && pos < trees[i].fragments.size() - 1)
+				while (pos < trees[i].fragments.size() - 1 && rd.pres.get(j) > trees[i].fragments.get(pos + 1).mpre)
 					pos++;
-				rd.results.get(pos).add(rd.pres.get(j) + "\t" + rd.values.get(j));
+				rd.results.get(pos).add(pos + ":" + rd.pres.get(j) + "\t" + rd.values.get(j));
 			}
+
+ 
+  
+
+	//				while (pos < mpres.size() - 1 && gpres.get(i) > mpres.get(pos + 1))
+	
+ 
+			
+			
+			StringBuilder sb = new StringBuilder();
+			for (ArrayList<String> arr : rd.results)
+				sb.append(arr + "\n");
+			common.saveStringtoFile(sb.toString(), "c:\\data\\tree" + i + ".txt");
 		}
 
 		StringBuilder sb = new StringBuilder();
