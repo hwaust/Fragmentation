@@ -6,7 +6,8 @@ public class QContext {
 	public String querykey;
 	public String[] ips; // used for query
 	public String[] dbs; // used for query
-
+	public static boolean isWin = true;
+	
 	public QContext() {
 		datafolder = "D:\\data\\fragments";
 	}
@@ -34,6 +35,10 @@ public class QContext {
 
 			case "key":
 				fc.querykey = v;
+				break;
+				
+			case "sys":
+				QContext.isWin = v.equals("win");
 				break;
 			}
 

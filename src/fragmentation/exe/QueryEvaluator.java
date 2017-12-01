@@ -17,10 +17,11 @@ public class QueryEvaluator {
 	public static void main(String[] args) throws Exception {
 		// for test
 		if (args.length == 0)
-			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3.org", "-f",
-					"d:\\data\\fragments\\xmark1_4_20K_20171126" };
+			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm6.org", "-f",
+					"d:\\data\\fragments\\xmark1_4_20K_20171126", "-sys", "win" };
 
 		QContext qc = QContext.parse(args);
+		BXClient.isTargetServerWinows = QContext.isWin;
 		System.out.println(qc);
 
 		String outfolder = qc.datafolder + File.separator + "output_" + qc.querykey.split("\\.")[0] + File.separator;
@@ -61,10 +62,10 @@ public class QueryEvaluator {
 
 		for (PExecutor pe : pes)
 			pe.run();
+
 		QueryResult_IntStringList[] rs = new QueryResult_IntStringList[trees.length];
 		for (int i = 0; i < rs.length; i++) {
 			rs[i] = (QueryResult_IntStringList) pes[i].sr;
-			System.out.println(rs[i].exetime);
 		}
 
 		// map results to fragments by the original PRE values

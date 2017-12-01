@@ -1,35 +1,12 @@
 package basex;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class PreValueReceiver {
-
-	public static void main(String[] args) throws Exception {
-
-		String str = "\n1\nabc\n\n2\nbcd\n\n3\nefg";
-
-		final InputStream instr = new ByteArrayInputStream(str.getBytes());
-
-		PreValueReceiver rec = new PreValueReceiver();
-
-		QueryResult_IntStringList rd = rec.process_linux(instr);
-
-		for (Integer item : rd.pres)
-			System.out.println(item);
-
-		for (String item : rd.values)
-			System.out.println(item);
-	}
-
-	QueryResult_IntStringList process(final InputStream input) throws IOException {
-		return new File("c:").exists() ? process_win(input) : process_linux(input);
-	}
-
-	QueryResult_IntStringList process_win(final InputStream input) throws IOException {
+public class PreValueReceiver { 
+	
+	public static QueryResult_IntStringList process_win(final InputStream input) throws IOException {
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
@@ -76,7 +53,7 @@ public class PreValueReceiver {
 		return rd;
 	}
 
-	QueryResult_IntStringList process_linux(final InputStream input) throws IOException {
+	public static QueryResult_IntStringList process_linux(final InputStream input) throws IOException {
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;

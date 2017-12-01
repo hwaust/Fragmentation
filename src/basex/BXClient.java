@@ -9,8 +9,10 @@ import java.nio.charset.Charset;
 
 public class BXClient extends BaseXClient {
 	public int tagid;
-	
+
 	Charset encoding = Charset.forName("UTF-8");
+	
+	public static boolean isTargetServerWinows = false;
 
 	public static BXClient open(String ip) throws IOException {
 		return new BXClient(ip, 1984, "admin", "admin");
@@ -55,17 +57,17 @@ public class BXClient extends BaseXClient {
 
 	// removed private
 	private static QueryResult_IntStringList recieve(final InputStream input) throws IOException {
-		return new PreValueReceiver().process(input);
+		return isTargetServerWinows ? PreValueReceiver.process_win(input) : PreValueReceiver.process_linux(input);
 	}
 
 	public void execute(String command, FileWriter fw) throws Exception {
 		send(command);
-		int b = 0; 
-		
-		BufferedWriter bw = new BufferedWriter(fw, 1024 * 1024); 
+		int b = 0;
+
+		BufferedWriter bw = new BufferedWriter(fw, 1024 * 1024);
 		while ((b = in.read()) > 0) {
-			bw.write(b); 
-		} 
+			bw.write(b);
+		}
 		bw.flush();
 		info = receive();
 		if (!ok())

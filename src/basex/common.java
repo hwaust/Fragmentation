@@ -14,7 +14,7 @@ import java.util.HashMap;
 import fragmentation.FragmentIndex;
 
 public class common {
-
+	
 	public static void main(String[] args) throws Exception {
 
 	}
