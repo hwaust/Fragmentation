@@ -1,15 +1,12 @@
 package fragmentation.exe;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
-
 import basex.BXClient;
-import basex.MyRunnable;
 import basex.PExecutor;
 import basex.QueryPlans;
 import basex.QueryResult_IntStringList;
 import basex.common;
-import fragmentation.FContext;
 import fragmentation.Fragment;
 import fragmentation.MergedTree;
 import fragmentation.QContext;
@@ -20,11 +17,18 @@ public class QueryEvaluator {
 	public static void main(String[] args) throws Exception {
 		// for test
 		if (args.length == 0)
-			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3.org", "-f",
-					"d:\\data\\fragments\\xmark1_4_20K_20171126" };
+			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm6.org", "-f",
+					"d:\\data\\fragments\\xmark1_4_20K_20171126", "-sys", "win" };
 
 		QContext qc = QContext.parse(args);
+		BXClient.isTargetServerWinows = QContext.isWin;
 		System.out.println(qc);
+
+		String outfolder = qc.datafolder + File.separator + "output_" + qc.querykey.split("\\.")[0] + File.separator;
+
+		File outdir = new File(outfolder);
+		if (!outdir.exists())
+			outdir.mkdirs();
 
 		ArrayList<Fragment> fs = Fragment.readFragmentList(qc.datafolder);
 		MergedTree[] trees = MergedTree.createTrees(fs);
@@ -42,24 +46,27 @@ public class QueryEvaluator {
 					qc.dbs[i], query);
 		}
 
+		common.saveStringtoFile(String.join("\n", cmds), outfolder + "p1_input_queries.txt");
+
 		PExecutor[] pes = new PExecutor[cmds.length];
 		BXClient[] bxs = new BXClient[trees.length];
 		for (int i = 0; i < pes.length; i++) {
 			bxs[i] = BXClient.open(qc.ips[i]);
+			bxs[i].tagid = i;
 			pes[i] = new PExecutor(bxs[i], 1, cmds[i]);
 		}
 
-		if (!isSerial) {
-			for (PExecutor pe : pes)
-				pe.run();
-		} else {
-			MyRunnable.parallelRun(pes);
+		for (int i = 0; i < bxs.length; i++) {
+			common.saveStringtoFile(bxs[i].execute(cmds[i]), outfolder + "p1_output_" + i + ".txt");
 		}
+
+		// for (PExecutor pe : pes)
+		// pe.run();
+		PExecutor.parallelRun(pes);
 
 		QueryResult_IntStringList[] rs = new QueryResult_IntStringList[trees.length];
 		for (int i = 0; i < rs.length; i++) {
 			rs[i] = (QueryResult_IntStringList) pes[i].sr;
-			System.out.println(rs[i].exetime);
 		}
 
 		// map results to fragments by the original PRE values
@@ -72,21 +79,16 @@ public class QueryEvaluator {
 			for (int j = 0; j < rd.pres.size(); j++) {
 				while (pos < trees[i].fragments.size() - 1 && rd.pres.get(j) > trees[i].fragments.get(pos + 1).mpre)
 					pos++;
-				rd.results.get(pos).add(pos + ":" + rd.pres.get(j) + "\t" + rd.values.get(j));
+				rd.results.get(pos).add(rd.values.get(j));
 			}
 
- 
-  
+			// while (pos < mpres.size() - 1 && gpres.get(i) > mpres.get(pos + 1))
 
-	//				while (pos < mpres.size() - 1 && gpres.get(i) > mpres.get(pos + 1))
-	
- 
-			
-			
 			StringBuilder sb = new StringBuilder();
 			for (ArrayList<String> arr : rd.results)
-				sb.append(arr + "\n");
-			common.saveStringtoFile(sb.toString(), "c:\\data\\tree" + i + ".txt");
+				for (String s : arr)
+					sb.append(s + "\n");
+			common.saveStringtoFile(sb.toString(), outfolder + "p2_output_" + i + ".txt");
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -95,11 +97,12 @@ public class QueryEvaluator {
 			arr.forEach(s -> sb.append(s + "\n"));
 		}
 
-		common.saveStringtoFile(sb.toString(), "c:\\data\\result.txt");
+		common.saveStringtoFile(sb.toString(), outfolder + "p3_out_finalresult.txt");
 
 		long t3 = System.currentTimeMillis();
 
-		System.out.printf("Completed. Execution time: %d ms, meger time: %d ms. \n", t2 - t1, t3 - t2);
+		System.out.printf("Completed. Execution time: %d ms, meger time: %d ms. Results are saved to: %s\n", t2 - t1,
+				t3 - t2, outfolder);
 	}
 
 }

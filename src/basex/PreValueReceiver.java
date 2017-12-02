@@ -1,7 +1,8 @@
 package basex;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -9,27 +10,20 @@ import java.util.ArrayList;
 public class PreValueReceiver {
 
 	public static void main(String[] args) throws Exception {
+		String file = "D:\\data\\output_xm2\\p1_output_2.txt";
 
-		String str = "\n1\nabc\n\n2\nbcd\n\n3\nefg";
+		InputStream fr = new FileInputStream(new File(file));
 
-		final InputStream instr = new ByteArrayInputStream(str.getBytes());
+		QueryResult_IntStringList qi = process_linux(fr);
 
-		PreValueReceiver rec = new PreValueReceiver();
+		System.out.println(qi.values);
 
-		QueryResult_IntStringList rd = rec.process_linux(instr);
+		fr.close();
 
-		for (Integer item : rd.pres)
-			System.out.println(item);
-
-		for (String item : rd.values)
-			System.out.println(item);
 	}
 
-	QueryResult_IntStringList process(final InputStream input) throws IOException {
-		return new File("c:").exists() ? process_win(input) : process_linux(input);
-	}
-
-	QueryResult_IntStringList process_win(final InputStream input) throws IOException {
+	public static QueryResult_IntStringList process_win(final InputStream input) throws IOException {
+		System.out.println("for windows.");
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
@@ -57,8 +51,10 @@ public class PreValueReceiver {
 					its.add(value);
 					value = 0;
 					input.read();
-				} else
+				} else {
 					isPreEnter = true;
+					sb.append("\r\n");
+				}
 			} else {
 				isPreEnter = false;
 				sb.append((char) b);
@@ -74,7 +70,8 @@ public class PreValueReceiver {
 		return rd;
 	}
 
-	QueryResult_IntStringList process_linux(final InputStream input) throws IOException {
+	public static QueryResult_IntStringList process_linux(final InputStream input) throws IOException {
+		System.out.println("for linux.");
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
@@ -98,8 +95,10 @@ public class PreValueReceiver {
 					}
 					its.add(value);
 					value = 0;
-				} else
+				} else {
 					isPreEnter = true;
+					sb.append("\n");
+				}
 			} else {
 				isPreEnter = false;
 				sb.append((char) b);

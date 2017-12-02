@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
  *
  */
 public class BXClient extends BaseXClient {
+	public int tagid;
 	Charset encoding = Charset.forName("UTF-8");
 
 	public static BXClient open(String ip) throws IOException {
@@ -62,7 +63,6 @@ public class BXClient extends BaseXClient {
 
 	// removed private
 	private static QueryResult_IntStringList recieve(final InputStream input) throws IOException {
-		return new PreValueReceiver().process(input);
 	}
 
 	public void execute(String command, FileWriter fw) throws Exception {
