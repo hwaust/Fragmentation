@@ -1,5 +1,7 @@
 package basex;
 
+import java.io.File;
+
 public class Context {
 
 	// server IP
@@ -16,9 +18,12 @@ public class Context {
 
 	public boolean inMemory;
 
+	public String folder;
+	
 	// number of times to
 	public int runningTimes;
 
+	
 	public String[] iplist;
 
 	public boolean dps;
@@ -89,6 +94,11 @@ public class Context {
 
 			case "st":
 				c.inMemory = v.equals("mem");
+				break;
+				
+			case "f":
+				c.folder = v;
+				new File(c.folder).mkdir();
 				break;
 			}
 

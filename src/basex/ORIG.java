@@ -1,12 +1,13 @@
 package basex;
 
+import java.io.File;
 import java.io.FileWriter;
 
 public class ORIG {
 
 	// BaseXProcessor
 	public static void main(String... args) throws Exception {
-		String testargs = "-db xmark1 -run 3 -query xm1.org -st disk";
+		String testargs = "-db xmark1 -run 3 -query xm3.org -st disk -f D:\\data\\results";
 		args = args.length == 0 ? testargs.split(" ") : args;
 		Context c = Context.initContent(args);
 		System.out.println("Processing: " + c);
@@ -21,7 +22,9 @@ public class ORIG {
 			if (c.inMemory) {
 				bx.execute(query);
 			} else {
-				FileWriter fw = new FileWriter(common.getFolder("results") + c.query.key + ".txt");
+				String results = c.folder + File.separator + "results";
+				new File(results).mkdirs();
+				FileWriter fw = new FileWriter(results + File.separator + c.query.key + ".txt");
 				bx.execute(query, fw);
 				fw.close();
 			}
@@ -32,7 +35,7 @@ public class ORIG {
 
 		bx.close();
 
-		logger.save();
+		logger.save(c.folder);
 
 	}
 

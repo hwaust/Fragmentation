@@ -30,6 +30,12 @@ public class Logger {
 		System.out.printf("\nLog data has been save to: %s\n", folder + logname);
 	}
 
+	public void save(String folder) throws Exception {
+		new File(folder).mkdirs();
+		common.saveStringtoFile(toString(), folder + File.separator + logname);
+		System.out.printf("\nLog data has been save to: %s\n", folder + File.separator + logname);
+	}
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (String key : keys) {
