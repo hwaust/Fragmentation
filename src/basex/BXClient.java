@@ -18,7 +18,10 @@ import java.nio.charset.Charset;
  */
 public class BXClient extends BaseXClient {
 	public int tagid;
+
 	Charset encoding = Charset.forName("UTF-8");
+	
+	public static boolean isTargetServerWinows = false;
 
 	public static BXClient open(String ip) throws IOException {
 		return new BXClient(ip, 1984, "admin", "admin");
@@ -63,6 +66,7 @@ public class BXClient extends BaseXClient {
 
 	// removed private
 	private static QueryResult_IntStringList recieve(final InputStream input) throws IOException {
+		return isTargetServerWinows ? PreValueReceiver.process_win(input) : PreValueReceiver.process_linux(input);
 	}
 
 	public void execute(String command, FileWriter fw) throws Exception {
