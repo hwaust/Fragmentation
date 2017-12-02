@@ -9,6 +9,12 @@ public class Logger {
 	HashMap<String, ArrayList<Double>> data = new HashMap<String, ArrayList<Double>>();
 	ArrayList<String> keys = new ArrayList<String>();
 
+	public String logname;
+
+	public Logger(String name) {
+		logname = name;
+	}
+
 	public void add(String key, double value) {
 		if (!data.keySet().contains(key)) {
 			data.put(key, new ArrayList<Double>());
@@ -17,11 +23,11 @@ public class Logger {
 		data.get(key).add(value);
 	}
 
-	public void save(String filename) throws Exception {
+	public void save() throws Exception {
 		String folder = common.getFolder("logs");
 		new File(folder).mkdirs();
-		common.saveStringtoFile(toString(), folder + filename);
-		System.out.printf("\nLog data has been save to: %s\n", folder + filename);
+		common.saveStringtoFile(toString(), folder + logname);
+		System.out.printf("\nLog data has been save to: %s\n", folder + logname);
 	}
 
 	public String toString() {

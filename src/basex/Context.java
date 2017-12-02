@@ -14,6 +14,8 @@ public class Context {
 	// number of partitions.
 	public int p;
 
+	public boolean inMemory;
+
 	// number of times to
 	public int runningTimes;
 
@@ -49,7 +51,6 @@ public class Context {
 	// -db server:database -query query_key -run running_times -ip 7:52:98:99
 	public static Context initContent(String[] args) throws Exception {
 		String allargs = String.join(" ", args);
-		System.out.println("args: " + allargs);
 
 		Context c = new Context();
 		String[] ops = allargs.split("-", -1);
@@ -61,21 +62,36 @@ public class Context {
 			String op = strs[0].trim();
 			String v = strs.length > 1 ? strs[1].trim() : null;
 
-			if (op.equals("db")) {
+			switch (op) {
+			case "db":
 				c.database = v;
-			} else if (op.equals("query")) {
+				break;
+
+			case "query":
 				c.query = QueryPlans.getQueryPlan(v);
 				c.dps = v.contains(".dps");
-			} else if (op.equals("run")) {
+				break;
+
+			case "run":
 				c.runningTimes = Integer.parseInt(v);
-			} else if (op.equals("ips")) {
+				break;
+
+			case "ips":
 				String[] ips = v.split(":");
 				c.iplist = new String[ips.length];
 				for (int j = 0; j < ips.length; j++)
 					c.iplist[j] = "172.21.52." + ips[j];
-			} else if (op.equals("p")){
+				break;
+
+			case "p":
 				c.p = Integer.parseInt(v);
+				break;
+
+			case "st":
+				c.inMemory = v.equals("mem");
+				break;
 			}
+
 		}
 
 		c.check();
@@ -89,11 +105,11 @@ public class Context {
 	 * @return
 	 */
 	public String getLogfileName() {
-		if (query.key.contains(".org")) {
-			return String.join("_", new String[] { database, query.key, common.getDateString() });
-		}
+		String name = query.key.contains(".org")
+				? String.format("%s_%s_%s", database, query.key, inMemory ? "mem" : "disk")
+				: String.format("%s_%s_%s", database, query.key, String.format("%02d", p));
 
-		return String.join("_", new String[] { database, query.key, String.format("%02d", p), common.getDateString() });
+		return name + "_" + common.getDateString();
 	}
 
 	// target: /site//keword --> xquery db:open('xmark1')/vn/site[p]/keyword
@@ -106,7 +122,7 @@ public class Context {
 		xq = "xquery db:open('" + database + "')" + xq;
 		return xq;
 	}
-	
+
 	public static String getOriginal(QueryPlan query, String database, int pos) {
 
 		// e.g. /site//keword -> /vn/site[p]/keyword
@@ -115,5 +131,9 @@ public class Context {
 		// xquery db:open('xmark1')/vn/site[p]/keyword
 		xq = "xquery db:open('" + database + "')" + xq;
 		return xq;
+	}
+
+	public String toString() {
+		return String.format("database=%s, querykey=%s, storage=%s", database, query.key, inMemory ? "memory" : "disk");
 	}
 }

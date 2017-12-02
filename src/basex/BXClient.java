@@ -7,6 +7,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+/**
+ * A socket based client in charge of processing queries with a remote (or
+ * local) BaseX server.
+ * 
+ * Two possible settings: set mainmem on | set queryinfo on
+ * 
+ * @author Administrator
+ *
+ */
 public class BXClient extends BaseXClient {
 	Charset encoding = Charset.forName("UTF-8");
 
@@ -58,16 +67,15 @@ public class BXClient extends BaseXClient {
 
 	public void execute(String command, FileWriter fw) throws Exception {
 		send(command);
-		int b = 0; 
-		
-		BufferedWriter bw = new BufferedWriter(fw, 1024 * 1024); 
+		int b = 0;
+
+		BufferedWriter bw = new BufferedWriter(fw, 1024 * 1024);
 		while ((b = in.read()) > 0) {
-			bw.write(b); 
-		} 
+			bw.write(b);
+		}
 		bw.flush();
 		info = receive();
 		if (!ok())
 			throw new IOException(info);
 	}
-
 }
