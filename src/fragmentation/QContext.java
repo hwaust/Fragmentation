@@ -1,13 +1,17 @@
 package fragmentation;
 
+import basex.QueryPlan;
+import basex.QueryPlans;
+
 public class QContext {
 
 	public String datafolder;
-	public String querykey;
 	public String[] ips; // used for query
 	public String[] dbs; // used for query
+	public int p; // number of thread used.
 	public static boolean isWin = true;
-	
+	public QueryPlan query;
+
 	public QContext() {
 		datafolder = "D:\\data\\fragments";
 	}
@@ -34,11 +38,15 @@ public class QContext {
 				break;
 
 			case "key":
-				fc.querykey = v;
+				fc.query = QueryPlans.getQueryPlan(v);
 				break;
-				
+
 			case "sys":
 				QContext.isWin = v.equals("win");
+				break;
+				
+			case "p":
+				fc.p = Integer.parseInt(v);
 				break;
 			}
 
@@ -51,14 +59,15 @@ public class QContext {
 
 	void check() throws Exception {
 		if (this.ips == null)
-			throw new Exception(String.format("No avaiable IP address."));
+			throw new Exception("No avaiable IP address.");
 		if (this.dbs == null)
 			throw new Exception(String.format("No available database."));
-
-		if(ips.length != dbs.length)
-			throw new Exception(String.format("IP address and DB names does not match in length."));		
+		if (query == null)
+			throw new Exception("Query not found");
+		if (ips.length != dbs.length)
+			throw new Exception(String.format("IP address and DB names does not match in length."));
 	}
-	
+
 	/**
 	 * Parse a string to create a list of IP addresses.
 	 * 
@@ -129,7 +138,7 @@ public class QContext {
 			sb.append(ips[i] + "." + dbs[i] + "; ");
 		sb.append("\n");
 
-		sb.append("Query Key: " + querykey + "\n");
+		sb.append("Query Key: " + query.key + "\n");
 		sb.append("Input folder: " + datafolder + "\n");
 
 		return sb.toString();

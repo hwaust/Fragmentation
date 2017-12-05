@@ -2,9 +2,8 @@ package basex;
 
 public class PExecutor extends MyRunnable {
 	public QueryResult sr;
-
-	BXClient bx;
-	String xquery;
+	public String xquery;
+	public BXClient bx;
 
 	public int resultType = 0;
 

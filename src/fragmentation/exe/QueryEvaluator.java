@@ -24,7 +24,7 @@ public class QueryEvaluator {
 		BXClient.isTargetServerWinows = QContext.isWin;
 		System.out.println(qc);
 
-		String outfolder = qc.datafolder + File.separator + "output_" + qc.querykey.split("\\.")[0] + File.separator;
+		String outfolder = qc.datafolder + File.separator + "output_" + qc.query.key.split("\\.")[0] + File.separator;
 
 		File outdir = new File(outfolder);
 		if (!outdir.exists())
@@ -34,7 +34,7 @@ public class QueryEvaluator {
 		MergedTree[] trees = MergedTree.createTrees(fs);
 
 		String query = "/site/open_auctions/open_auction/bidder/increase";
-		query = QueryPlans.getQueryPlan(qc.querykey).first();
+		query = QueryPlans.getQueryPlan(qc.query.key).first();
 
 		// process queries and return pre-formatted intermediate results.
 		System.out.println("processing query...");

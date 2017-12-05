@@ -26,6 +26,13 @@ public class BXClient extends BaseXClient {
 	public static BXClient open(String ip) throws IOException {
 		return new BXClient(ip, 1984, "admin", "admin");
 	}
+	
+	public static BXClient open(String ip, boolean ismainmem) throws IOException {
+		BXClient bx = new BXClient(ip, 1984, "admin", "admin");
+		bx.send("set mainmem on");
+		return bx;
+	}
+
 
 	public BXClient(String host, int port, String username, String password) throws IOException {
 		super(host, port, username, password);

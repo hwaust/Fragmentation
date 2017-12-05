@@ -23,7 +23,6 @@ public class PreValueReceiver {
 	}
 
 	public static QueryResult_IntStringList process_win(final InputStream input) throws IOException {
-		System.out.println("for windows.");
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
@@ -71,7 +70,6 @@ public class PreValueReceiver {
 	}
 
 	public static QueryResult_IntStringList process_linux(final InputStream input) throws IOException {
-		System.out.println("for linux.");
 		ArrayList<Integer> its = new ArrayList<Integer>();
 		ArrayList<String> strs = new ArrayList<String>();
 		boolean isPreEnter = true;
