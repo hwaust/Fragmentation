@@ -18,26 +18,18 @@ public class Context {
 
 	public boolean inMemory;
 
-	public String folder;
-	
+	// folder that for storing output data.
+	public String outputfolder;
+
 	// number of times to
 	public int runningTimes;
-
-	
-	public String[] iplist;
-
-	public boolean dps;
 
 	// default value
 	private Context() {
 		p = 1;
 		database = null;
 		query = null;
-		runningTimes = 1;
-		dps = false;
-		iplist = new String[4];
-		for (int i = 0; i < iplist.length; i++)
-			iplist[i] = "172.21.52." + (i + 50);
+		runningTimes = 1; 
 	}
 
 	private void check() throws Exception {
@@ -50,55 +42,44 @@ public class Context {
 		if (runningTimes < 1)
 			throw new Exception(
 					String.format("violating Context.runningTimes > 1: Context.runningTimes = %d", runningTimes));
-		// nocheck for isSerial
 	}
 
-	// -db server:database -query query_key -run running_times -ip 7:52:98:99
 	public static Context initContent(String[] args) throws Exception {
 		String allargs = String.join(" ", args);
-
 		Context c = new Context();
 		String[] ops = allargs.split("-", -1);
+
 		for (int i = 0; i < ops.length; i++) {
 			if (ops[i].trim().length() == 0)
 				continue;
 
-			String[] strs = ops[i].split(" ");
-			String op = strs[0].trim();
-			String v = strs.length > 1 ? strs[1].trim() : null;
+			String cmd = ops[i].split(" ")[0];
+			String arg = ops[i].split(" ")[1];
 
-			switch (op) {
+			switch (cmd) {
 			case "db":
-				c.database = v;
+				c.database = arg;
 				break;
 
 			case "query":
-				c.query = QueryPlans.getQueryPlan(v);
-				c.dps = v.contains(".dps");
+				c.query = QueryPlans.getQueryPlan(arg);
 				break;
 
 			case "run":
-				c.runningTimes = Integer.parseInt(v);
-				break;
-
-			case "ips":
-				String[] ips = v.split(":");
-				c.iplist = new String[ips.length];
-				for (int j = 0; j < ips.length; j++)
-					c.iplist[j] = "172.21.52." + ips[j];
+				c.runningTimes = Integer.parseInt(arg);
 				break;
 
 			case "p":
-				c.p = Integer.parseInt(v);
+				c.p = Integer.parseInt(arg);
 				break;
 
 			case "st":
-				c.inMemory = v.equals("mem");
+				c.inMemory = arg.equals("mem");
 				break;
-				
+
 			case "f":
-				c.folder = v;
-				new File(c.folder).mkdir();
+				c.outputfolder = arg;
+				new File(c.outputfolder).mkdir();
 				break;
 			}
 
@@ -106,6 +87,7 @@ public class Context {
 
 		c.check();
 		return c;
+
 	}
 
 	/**
@@ -114,36 +96,17 @@ public class Context {
 	 *
 	 * @return
 	 */
-	public String getLogfileName() {
-		String name = query.key.contains(".org")
-				? String.format("%s_%s_%s", database, query.key, inMemory ? "mem" : "disk")
-				: String.format("%s_%s_%s", database, query.key, String.format("%02d", p));
-
-		return name + "_" + common.getDateString();
-	}
-
-	// target: /site//keword --> xquery db:open('xmark1')/vn/site[p]/keyword
-	public String getOriginal(int pos) {
-
-		// e.g. /site//keword -> /vn/site[p]/keyword
-		String xq = query.first().replace("/site", "/vn/site[" + (pos + 1) + "]");
-
-		// xquery db:open('xmark1')/vn/site[p]/keyword
-		xq = "xquery db:open('" + database + "')" + xq;
-		return xq;
-	}
-
-	public static String getOriginal(QueryPlan query, String database, int pos) {
-
-		// e.g. /site//keword -> /vn/site[p]/keyword
-		String xq = query.first().replace("/site", "/vn/site[" + (pos + 1) + "]");
-
-		// xquery db:open('xmark1')/vn/site[p]/keyword
-		xq = "xquery db:open('" + database + "')" + xq;
-		return xq;
+	public String toCharacterString() {
+		return String.format("%s_%s_%s_%s", database, query.key, inMemory ? "mem" : "disk", common.getDateString());
 	}
 
 	public String toString() {
 		return String.format("database=%s, querykey=%s, storage=%s", database, query.key, inMemory ? "memory" : "disk");
+	}
+
+	public String makeOutFolder() throws Exception {
+		String f = outputfolder + File.separator + "results" + File.separator;
+		new File(f).mkdirs();
+		return f;
 	}
 }

@@ -24,10 +24,8 @@ public class Logger {
 	}
 
 	public void save() throws Exception {
-		String folder = common.getFolder("logs");
-		new File(folder).mkdirs();
-		common.saveStringtoFile(toString(), folder + logname);
-		System.out.printf("\nLog data has been save to: %s\n", folder + logname);
+		common.saveStringtoFile(toString(), logname);
+		System.out.printf("\nLog data saved to %s\n", logname);
 	}
 
 	public void save(String folder) throws Exception {
@@ -39,7 +37,7 @@ public class Logger {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (String key : keys) {
-			sb.append(key + ":");
+			sb.append(key + "\t");
 			ArrayList<Double> vs = data.get(key);
 			for (int i = 0; i < vs.size(); i++) {
 				sb.append(String.format("%8.0f", vs.get(i)));

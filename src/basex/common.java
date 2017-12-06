@@ -14,7 +14,7 @@ import java.util.HashMap;
 import fragmentation.FragmentIndex;
 
 public class common {
-	
+
 	public static void main(String[] args) throws Exception {
 
 	}
@@ -213,16 +213,11 @@ public class common {
 		Runtime r = Runtime.getRuntime();
 		long mfree = r.freeMemory();
 		long mtotal = r.totalMemory();
-		long mused = mtotal - mfree; 
-		
-		DecimalFormat df1 = (DecimalFormat) DecimalFormat.getInstance();  
-        df1.setGroupingSize(3);  
-        System.out.println(df1.format(23456789));
-        
+		long mused = mtotal - mfree;
+
 		System.out.printf("used = %s, free = %s, total = %s.", common.formatFileSize(mused),
 				common.formatFileSize(mfree), common.formatFileSize(mtotal));
 	}
-
 
 	public static int FormatedStringToInt(String s) {
 		int value = 0;
@@ -246,6 +241,21 @@ public class common {
 	public static String IntToFormatedString(int v) {
 		return v > 1000000 ? v / 1000000 + "M" : v > 1000 ? v / 1000 + "K" : v + "";
 	}
- 
+
+	public static void gc() {
+		Runtime r = Runtime.getRuntime();
+		long total = r.totalMemory();
+		long used1 = r.totalMemory() - r.freeMemory();
+
+		long t1 = System.currentTimeMillis();
+		System.gc();
+		long t2 = System.currentTimeMillis();
+
+		r = Runtime.getRuntime();
+		long used2 = r.totalMemory() - r.freeMemory();
+
+		System.out.printf("Used memory: %d MB -> %d MB of %d MB. Time cost: %d ms.\n", used1 / 1048576, used2 / 1048576,
+				total / 1048576, t2 - t1);
+	}
 
 }

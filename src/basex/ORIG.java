@@ -5,38 +5,43 @@ import java.io.FileWriter;
 
 public class ORIG {
 
-	// BaseXProcessor
 	public static void main(String... args) throws Exception {
+
 		String testargs = "-db xmark1 -run 3 -query xm3.org -st disk -f D:\\data\\results";
 		args = args.length == 0 ? testargs.split(" ") : args;
+
 		Context c = Context.initContent(args);
 		System.out.println("Processing: " + c);
 
-		BXClient bx = BXClient.open("localhost");
+		String outfolder = c.makeOutFolder();
+		String outfile = outfolder + c.query.key + ".txt";
 
-		Logger logger = new Logger(c.getLogfileName() + ".txt");
+		BXClient bx = BXClient.open("localhost");
 		String query = String.format("xquery for $node in db:open('%s')%s return $node", c.database, c.query.first());
+		Logger logger = new Logger(c.outputfolder + File.separator + c.toCharacterString() + ".txt");
+		long executionTime = 0;
+
 		for (int rt = 0; rt < c.runningTimes; rt++) {
-			System.out.print(".");
-			long t1 = System.currentTimeMillis();
+			common.gc();
+
 			if (c.inMemory) {
+				long startTime = System.currentTimeMillis();
 				bx.execute(query);
+				executionTime = System.currentTimeMillis() - startTime;
 			} else {
-				String results = c.folder + File.separator + "results";
-				new File(results).mkdirs();
-				FileWriter fw = new FileWriter(results + File.separator + c.query.key + ".txt");
+				new File(outfile).delete();
+				FileWriter fw = new FileWriter(outfile);
+				long startTime = System.currentTimeMillis();
 				bx.execute(query, fw);
+				executionTime = System.currentTimeMillis() - startTime;
 				fw.close();
 			}
 
-			long t2 = System.currentTimeMillis();
-			logger.add("total", t2 - t1);
+			logger.add("total", executionTime);
 		}
 
+		logger.save();
 		bx.close();
-
-		logger.save(c.folder);
-
 	}
 
 }

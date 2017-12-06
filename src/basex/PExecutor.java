@@ -49,4 +49,9 @@ public class PExecutor extends MyRunnable {
 		}
 	}
 
+	public void setQuery(String xquery, int resultType) {
+		this.xquery = xquery;
+		this.resultType = resultType;
+	}
+
 }

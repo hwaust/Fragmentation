@@ -27,12 +27,12 @@ public class QueryEvaluatorDPS {
 		QContext c = QContext.parse(args);
 		System.out.println("Processing " + c + "...");
 
-		// Because a line break is "\r\n" on Windows while "\n" on Linux
+		// Because a line break is "\r\n" on Windows but "\n" on Linux
 		// in the returned results from a BaseX server depending where the
-		// BaseX server is on, they are treated separately.
+		// BaseX server is on, they are thus treated accordingly.
 		BXClient.isTargetServerWinows = QContext.isWin;
-		int Ns = c.dbs.length;
-		int P = c.p;
+		int Ns = c.dbs.length; // number of merged trees or BaseX servers
+		int P = c.p; // number of partitions
 
 		// load fragments and trees
 		ArrayList<Fragment> fs = Fragment.readFragmentList(c.datafolder);
@@ -61,20 +61,30 @@ public class QueryEvaluatorDPS {
 		for (int i = 0; i < prefixes.length; i++)
 			suffixes[i] = sss[i].getSuffix(c.query, P);
 
-		// execute three commands: "set mainmem on; drop tmpdb; set new tmpdb;"
+		// execute three commands:
+		// "set mainmem on; drop tmpdb; set new tmpdb;"
 		for (int i = 0; i < Ns; i++)
 			for (String q : sss[i].createTempdb().split(";"))
 				pes[i].bx.execute(q);
+
 		/*******************************
 		 * 
-		 * Process prefix query
+		 * Execute prefix queries
 		 * 
 		 *******************************/
 
 		for (int i = 0; i < pes.length; i++)
-			pes[i] = new PExecutor(BXClient.open(c.ips[i], true), 1, prefixes[i]);
+			pes[i].setQuery(prefixes[i], 1);
 		long Tprefix = PExecutor.parallelRun(pes);
 
+		// Save temp databases.
+		for (int i = 0; i < pes.length; i++) {
+			String q0 = String.format("xquery db:open('mfrag%d_tmp')", i);
+			String r = pes[i].bx.execute(q0);
+			common.saveStringtoFile(r, outfolder + "TEMPDB_" + i + ".txt");
+		}
+
+		Thread.sleep(1000);
 		/*******************************
 		 * 
 		 * Process suffix query
@@ -108,14 +118,17 @@ public class QueryEvaluatorDPS {
 		long Tsuffix = PExecutor.parallelRun(pes);
 
 		/*******************************
-		 * Process results
+		 * 
+		 * Merge results
+		 * 
 		 *******************************/
 		QueryResult_IntStringList[][] rs = new QueryResult_IntStringList[Ns][];
 		for (int i = 0; i < Ns; i++) {
 			rs[i] = new QueryResult_IntStringList[P];
 			for (int j = 0; j < P; j++) {
 				rs[i][j] = (QueryResult_IntStringList) pess[i][j].sr;
-				System.out.printf("rs[%d][%d]=%d, query=%s\n", i, j, rs[i][j].pres.size(), pess[i][j].xquery);
+				System.out.printf("rs[%d][%d].pres.size()=%d, query=%s\n", i, j, rs[i][j].pres.size(),
+						pess[i][j].xquery);
 			}
 		}
 
@@ -131,16 +144,13 @@ public class QueryEvaluatorDPS {
 			}
 		}
 
-		// map results to fragments by the original PRE values
-		List<List<List<String>>> results = new ArrayList<List<List<String>>>();
-
 		for (int i = 0; i < trees.length; i++) {
 			MergedTree tree = trees[i];
 			int pos = 0;
 			List<List<String>> values = new ArrayList<List<String>>();
 			for (int t = 0; t < tree.fragments.size(); t++)
 				values.add(new ArrayList<String>());
-			results.add(values);
+
 			for (int k = 0; k < P; k++) {
 				QueryResult_IntStringList rd = rs[i][k];
 				for (int j = 0; j < rd.pres.size(); j++) {
@@ -160,7 +170,7 @@ public class QueryEvaluatorDPS {
 		StringBuilder sb = new StringBuilder();
 		for (Fragment f : fs)
 			f.results.forEach(s -> sb.append(s + "\n"));
-		common.saveStringtoFile(sb.toString(), outfolder + "p3_out_finalresult.txt");
+		common.saveStringtoFile(sb.toString(), outfolder + "P3_OUTPUT_FinalResult.txt");
 
 		System.out.printf("Completed. Tprefix=%d ms; Tsufix=%d ms; \n", Tprefix, Tsuffix);
 		System.out.println("Results are saved to: " + outfolder + "\n");
