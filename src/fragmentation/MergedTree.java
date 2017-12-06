@@ -1,6 +1,7 @@
 package fragmentation;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -21,6 +22,8 @@ public class MergedTree {
 	 */
 	public ArrayList<Fragment> fragments;
 
+	public List<List<String>> values;
+	
 	public MergedTree(int mid) {
 		this.mid = mid;
 		this.fragments = new ArrayList<Fragment>();

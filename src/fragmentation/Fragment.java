@@ -21,6 +21,8 @@ import basex.common;
  */
 public class Fragment {
 
+	public List<String> results;
+
 	/**
 	 * A unique integer representing this fragment.
 	 */
@@ -71,6 +73,7 @@ public class Fragment {
 		size = 0;
 		subtrees = new ArrayList<Node>();
 		rootPath = new ArrayList<Node>();
+		results = new ArrayList<String>();
 	}
 
 	public void add(Node node) {
