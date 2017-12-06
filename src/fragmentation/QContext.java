@@ -1,5 +1,7 @@
 package fragmentation;
 
+import java.io.File;
+
 import basex.QueryPlan;
 import basex.QueryPlans;
 
@@ -44,7 +46,7 @@ public class QContext {
 			case "sys":
 				QContext.isWin = v.equals("win");
 				break;
-				
+
 			case "p":
 				fc.p = Integer.parseInt(v);
 				break;
@@ -142,6 +144,12 @@ public class QContext {
 		sb.append("Input folder: " + datafolder + "\n");
 
 		return sb.toString();
+	}
+
+	public String makeOutputFolder() {
+		String outfolder = String.format("%s%s", datafolder + File.separator, query.key + File.separator);
+		new File(outfolder).mkdir();
+		return outfolder;
 	}
 
 }

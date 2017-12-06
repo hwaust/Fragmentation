@@ -12,7 +12,8 @@ public class MyRunnable implements Runnable {
 
 	}
 
-	public static void parallelRun(MyRunnable[] tasks) throws Exception {
+	public static long parallelRun(MyRunnable[] tasks) throws Exception {
+		long t1 = System.currentTimeMillis();
 		int P = tasks.length;
 		ExecutorService executor = Executors.newFixedThreadPool(P);
 		CountDownLatch latch = new CountDownLatch(P);
@@ -25,6 +26,7 @@ public class MyRunnable implements Runnable {
 		latch.await();
 
 		executor.shutdown();
+		return System.currentTimeMillis() - t1;
 	}
 
 	public static void serialRun(MyRunnable[] tasks) throws Exception {
@@ -43,8 +45,8 @@ public class MyRunnable implements Runnable {
 	}
 
 	public static void serialRun(MyRunnable task) throws Exception {
-		ExecutorService executor = Executors.newFixedThreadPool(1); 
-		executor.submit(task); 
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		executor.submit(task);
 		executor.shutdown();
 	}
 

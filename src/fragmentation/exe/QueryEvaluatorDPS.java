@@ -25,51 +25,61 @@ public class QueryEvaluatorDPS {
 			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3a.dps", "-f",
 					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4", "-sys", "win" };
 		QContext c = QContext.parse(args);
-		System.out.println(c);
+		System.out.println("Processing " + c + "...");
+
+		// Because a line break is "\r\n" on Windows while "\n" on Linux
+		// in the returned results from a BaseX server depending where the
+		// BaseX server is on, they are treated separately.
 		BXClient.isTargetServerWinows = QContext.isWin;
 		int Ns = c.dbs.length;
 		int P = c.p;
+
+		// load fragments and trees
 		ArrayList<Fragment> fs = Fragment.readFragmentList(c.datafolder);
 		MergedTree[] trees = MergedTree.createTrees(fs);
+
+		// for making prefix and suffix queries
 		ServerSideEx[] sss = new ServerSideEx[Ns];
 		for (int i = 0; i < sss.length; i++)
 			sss[i] = new ServerSideEx(c.dbs[i]);
-		String outfolder = c.datafolder + File.separator + "output_" + c.query.key.split("\\.")[0] + File.separator;
-		new File(outfolder).mkdir();
+
+		// for storing output data.
+		String outfolder = c.makeOutputFolder();
+
+		// in charge of parallel executing.
 		PExecutor[] pes = new PExecutor[Ns];
 		for (int i = 0; i < Ns; i++)
 			pes[i] = new PExecutor(BXClient.open(c.ips[i], true));
 
-		/*******************************
-		 * Process prefix query
-		 *******************************/
-		System.out.printf("processing query %s...\n", c.query.key);
-		long t1 = System.currentTimeMillis();
-
-		// set mainmem on; drop tmpdb; set new db;
-		for (int i = 0; i < Ns; i++) {
-			for (String q : sss[i].createTempdb().split(";"))
-				pes[i].bx.execute(q);
-		}
-
+		// prefix queries
 		String[] prefixes = new String[Ns];
 		for (int i = 0; i < Ns; i++)
 			prefixes[i] = sss[i].getPrefix(c.query, P);
 
-		// for prefix
-		for (int i = 0; i < pes.length; i++)
-			pes[i] = new PExecutor(BXClient.open(c.ips[i], true), 1, prefixes[i]);
-		PExecutor.parallelRun(pes);
-
-		// for (int i = 0; i < pes.length; i++)
-		// System.out.printf("pes[%d]=%s\n", i, pes[i].xquery);
-
-		/*******************************
-		 * Process suffix query
-		 *******************************/
+		// suffix queries
 		String[][] suffixes = new String[trees.length][];
 		for (int i = 0; i < prefixes.length; i++)
 			suffixes[i] = sss[i].getSuffix(c.query, P);
+
+		// execute three commands: "set mainmem on; drop tmpdb; set new tmpdb;"
+		for (int i = 0; i < Ns; i++)
+			for (String q : sss[i].createTempdb().split(";"))
+				pes[i].bx.execute(q);
+		/*******************************
+		 * 
+		 * Process prefix query
+		 * 
+		 *******************************/
+
+		for (int i = 0; i < pes.length; i++)
+			pes[i] = new PExecutor(BXClient.open(c.ips[i], true), 1, prefixes[i]);
+		long Tprefix = PExecutor.parallelRun(pes);
+
+		/*******************************
+		 * 
+		 * Process suffix query
+		 * 
+		 *******************************/
 
 		// execute and store the original output of P1.
 		for (int i = 0; i < Ns; i++) {
@@ -86,16 +96,16 @@ public class QueryEvaluatorDPS {
 			for (int j = 0; j < P; j++) {
 				pess[i][j] = new PExecutor(BXClient.open(c.ips[i]), 1, suffixes[i][j]);
 				System.out.printf("pess[%d][%d].query=%s\n", i, j, pess[i][j].xquery);
-
 			}
 		}
 
-		// PExecutor[][] -> PExecutor[] for executing.
+		// Convert PExecutor[][] to PExecutor[] for executing.
 		pes = new PExecutor[Ns * P];
 		for (int i = 0; i < Ns; i++)
 			for (int j = 0; j < P; j++)
 				pes[i * P + j] = pess[i][j];
-		PExecutor.parallelRun(pes);
+
+		long Tsuffix = PExecutor.parallelRun(pes);
 
 		/*******************************
 		 * Process results
@@ -116,27 +126,21 @@ public class QueryEvaluatorDPS {
 				StringBuilder sb = new StringBuilder();
 				for (int k = 0; k < rij.pres.size(); k++)
 					sb.append(rij.values.get(k) + "\r\n");
-
 				String filename = String.format("%sPT2_OUTPUT_T%d_P%d.txt", outfolder, i, j);
 				common.saveStringtoFile(sb.toString(), filename);
 			}
-
 		}
 
 		// map results to fragments by the original PRE values
-		long t2 = System.currentTimeMillis();
-
 		List<List<List<String>>> results = new ArrayList<List<List<String>>>();
 
 		for (int i = 0; i < trees.length; i++) {
 			MergedTree tree = trees[i];
-
 			int pos = 0;
 			List<List<String>> values = new ArrayList<List<String>>();
 			for (int t = 0; t < tree.fragments.size(); t++)
 				values.add(new ArrayList<String>());
 			results.add(values);
-
 			for (int k = 0; k < P; k++) {
 				QueryResult_IntStringList rd = rs[i][k];
 				for (int j = 0; j < rd.pres.size(); j++) {
@@ -154,15 +158,11 @@ public class QueryEvaluatorDPS {
 		}
 
 		StringBuilder sb = new StringBuilder();
-
 		for (Fragment f : fs)
 			f.results.forEach(s -> sb.append(s + "\n"));
-
 		common.saveStringtoFile(sb.toString(), outfolder + "p3_out_finalresult.txt");
 
-		long t3 = System.currentTimeMillis();
-
-		System.out.printf("Completed. Execution time: %d ms, meger time: %d ms. \n", t2 - t1, t3 - t2);
+		System.out.printf("Completed. Tprefix=%d ms; Tsufix=%d ms; \n", Tprefix, Tsuffix);
 		System.out.println("Results are saved to: " + outfolder + "\n");
 	}
 

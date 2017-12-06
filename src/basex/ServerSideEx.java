@@ -56,6 +56,6 @@ public class ServerSideEx {
 	}
 
 	public String createTempdb() {
-		return "set mainmem false;drop db " + tmpdb + " ;create db " + tmpdb + " <root></root>";
+		return "set mainmem true;drop db " + tmpdb + " ;create db " + tmpdb + " <root></root>";
 	}
 }
