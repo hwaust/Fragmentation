@@ -6,12 +6,19 @@ import java.io.FileInputStream;
 /**
  * Examine the occurrence of all 256 ASICC characters of an input file.
  */
-public class CharOccurence {
+public class CharacterOccurence {
 
+	/**
+	 * Returns occurrence of 256 character of an input file.
+	 * 
+	 * @param args
+	 *            Only one argument, an input file.
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		args = args.length == 0 ? "D:\\data\\xmark\\xmark1.xml".split(" ") : args;
 
-		if (new File(args[0]).exists())
+		if (!new File(args[0]).exists())
 			throw new Exception("File " + args[0] + " does not exist.");
 
 		long[] charcount = new long[256];
