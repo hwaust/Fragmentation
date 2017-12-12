@@ -1,4 +1,4 @@
-package fragmentation.tests;
+package tests;
 
 import java.util.ArrayList;
 
