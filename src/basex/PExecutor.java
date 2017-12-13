@@ -7,8 +7,8 @@ public class PExecutor extends MyRunnable {
 
 	public int resultType = 0;
 
-	public PExecutor(BXClient processor) {
-		this.bx = processor;
+	public PExecutor(BXClient bxclient) {
+		this.bx = bxclient;
 	}
 
 	public PExecutor(BXClient processor, int resultType, String query) {
@@ -23,6 +23,7 @@ public class PExecutor extends MyRunnable {
 
 	@Override
 	public void run() {
+
 		try {
 			switch (resultType) {
 			case 0:

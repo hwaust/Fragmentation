@@ -2,7 +2,6 @@ package fragmentation;
 
 import java.io.File;
 
-import basex.DBInfo;
 import basex.common;
 
 public class FContext {
@@ -96,12 +95,5 @@ public class FContext {
 		return dir;
 	}
 
-	public DBInfo[] getDBInfo() {
-		String dir = this.getFullPath(null);
-		DBInfo[] dbs = new DBInfo[Ns];
-		for (int i = 0; i < dbs.length; i++)
-			dbs[i] = new DBInfo(ip, "frag_" + i, dir);
-
-		return dbs;
-	}
+ 
 }

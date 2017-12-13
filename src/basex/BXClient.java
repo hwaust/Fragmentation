@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 
 /**
@@ -20,19 +19,11 @@ public class BXClient extends BaseXClient {
 	public int tagid;
 
 	Charset encoding = Charset.forName("UTF-8");
-	
-	public static boolean isTargetServerWinows = false;
 
 	public static BXClient open(String ip) throws IOException {
 		return new BXClient(ip, 1984, "admin", "admin");
 	}
-	
-	public static BXClient open(String ip, boolean ismainmem) throws IOException {
-		BXClient bx = new BXClient(ip, 1984, "admin", "admin");
-		bx.send("set mainmem on");
-		return bx;
-	}
-
+ 
 
 	public BXClient(String host, int port, String username, String password) throws IOException {
 		super(host, port, username, password);
@@ -57,11 +48,11 @@ public class BXClient extends BaseXClient {
 	public QueryResult executeForIntStringArray(final String command) throws IOException {
 		long start = System.currentTimeMillis();
 		send(command);
-		QueryResult_IntStringList qr = recieve(in);
-		info = receive();
+		QueryResult_IntStringList qr = PreValueReceiver.process(in);
+ 
+		 info = receive(); 
 		if (!ok())
 			throw new IOException(info);
-
 		qr.exetime = System.currentTimeMillis() - start;
 		qr.info = this.info;
 
@@ -69,11 +60,6 @@ public class BXClient extends BaseXClient {
 		qr.receiving = System.currentTimeMillis() - start;
 
 		return qr;
-	}
-
-	// removed private
-	private static QueryResult_IntStringList recieve(final InputStream input) throws IOException {
-		return isTargetServerWinows ? PreValueReceiver.process_win(input) : PreValueReceiver.process_linux(input);
 	}
 
 	public void execute(String command, FileWriter fw) throws Exception {

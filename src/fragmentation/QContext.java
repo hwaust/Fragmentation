@@ -8,11 +8,11 @@ import basex.QueryPlans;
 public class QContext {
 
 	public String datafolder;
-	public String[] ips; // used for query
-	public String[] dbs; // used for query
-	public int p; // number of thread used.
-	public static boolean isWin = true;
+	public String[] ips;       // workers
+	public String[] dbs;       // databases on workers
+	public int p;              // number of partitions
 	public QueryPlan query;
+	public char separator;
 
 	public QContext() {
 		datafolder = "D:\\data\\fragments";
@@ -43,8 +43,8 @@ public class QContext {
 				fc.query = QueryPlans.getQueryPlan(v);
 				break;
 
-			case "sys":
-				QContext.isWin = v.equals("win");
+			case "sp":
+				fc.separator = v.charAt(0);
 				break;
 
 			case "p":

@@ -1,5 +1,7 @@
 package basex;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +29,20 @@ public class MyRunnable implements Runnable {
 
 		executor.shutdown();
 		return System.currentTimeMillis() - t1;
+	}
+
+	public static long parallelRun(PExecutor[][] pess) throws Exception {
+		List<PExecutor> executorList = new ArrayList<PExecutor>();
+
+		for (int i = 0; i < pess.length; i++)
+			for (int j = 0; j < pess[i].length; j++)
+				executorList.add(pess[i][j]);
+
+		PExecutor[] executors = new PExecutor[executorList.size()];
+		for (int i = 0; i < executors.length; i++)
+			executors[i] = executorList.get(i);
+
+		return parallelRun(executors);
 	}
 
 	public static void serialRun(MyRunnable[] tasks) throws Exception {

@@ -94,7 +94,6 @@ public class BaseXClient implements Closeable {
 		send(command);
 		receive(in, output);
 		info = receive();
-
 		if (!ok())
 			throw new IOException(info);
 	}

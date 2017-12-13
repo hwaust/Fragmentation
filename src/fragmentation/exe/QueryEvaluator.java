@@ -20,8 +20,7 @@ public class QueryEvaluator {
 			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm6.org", "-f",
 					"d:\\data\\fragments\\xmark1_4_20K_20171126", "-sys", "win" };
 
-		QContext qc = QContext.parse(args);
-		BXClient.isTargetServerWinows = QContext.isWin;
+		QContext qc = QContext.parse(args); 
 		System.out.println(qc);
 
 		String outfolder = qc.datafolder + File.separator + "output_" + qc.query.key.split("\\.")[0] + File.separator;
