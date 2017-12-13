@@ -25,7 +25,7 @@ public class QueryEvaluatorDPS {
 					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4" };
 
 		QContext c = QContext.parse(args);
-		System.out.println("Processing " + c + "...");
+		System.out.println("Processing " + c);
 
 		int Ns = c.dbs.length; // number of merged trees (or workers)
 		int P = c.p; // number of partitions

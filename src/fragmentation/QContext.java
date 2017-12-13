@@ -141,7 +141,7 @@ public class QContext {
 		sb.append("\n");
 
 		sb.append("Query Key: " + query.key + "\n");
-		sb.append("Input folder: " + datafolder + "\n");
+		sb.append("Input folder: " + datafolder);
 
 		return sb.toString();
 	}
