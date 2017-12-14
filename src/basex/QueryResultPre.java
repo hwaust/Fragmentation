@@ -2,12 +2,16 @@ package basex;
 
 import java.util.ArrayList;
 
-public class QueryResult_IntStringList extends QueryResult {
+public class QueryResultPre extends QueryResult {
 
 	public ArrayList<Integer> pres = new ArrayList<Integer>();
 	public ArrayList<String> values = new ArrayList<String>();
 	public int[] newpres;
 
+	public int size() {
+		return pres.size();
+	}
+	
 	/**
 	 * The length of this array is the same as the number of fragments.
 	 */

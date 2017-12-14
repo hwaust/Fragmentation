@@ -23,7 +23,7 @@ public class MergedTree {
 	public ArrayList<Fragment> fragments;
 
 	public List<List<String>> values;
-	
+
 	public MergedTree(int mid) {
 		this.mid = mid;
 		this.fragments = new ArrayList<Fragment>();
@@ -120,6 +120,13 @@ public class MergedTree {
 			sb.append(path + ";" + f.fid + "\n");
 		}
 		return sb.toString();
+	}
+
+	public int[] getInterval() {
+		int[] intervals = new int[this.fragments.size()];
+		for (int i = 0; i < intervals.length; i++)
+			intervals[i] = this.fragments.get(i).gpre;
+		return intervals;
 	}
 
 }

@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import basex.BXClient;
-import basex.QueryResult_IntStringList;
+import basex.QueryResultPre;
 import basex.common;
 
 public class IntPreEfficiencyTest {
@@ -22,7 +22,7 @@ public class IntPreEfficiencyTest {
 		long total = 0;
 		long time = 0;
 		int runningTimes = 20;
-		QueryResult_IntStringList qrl = process(bs);
+		QueryResultPre qrl = process(bs);
 		
 		for (int i = 0; i < 3; i++) { 
 			bs = new ByteArrayInputStream(bts); 
@@ -54,8 +54,8 @@ public class IntPreEfficiencyTest {
 		common.saveStringtoFile(results, path);
 	}
 	
-	public static QueryResult_IntStringList process(final InputStream input) throws IOException {
-		QueryResult_IntStringList rd = new QueryResult_IntStringList();
+	public static QueryResultPre process(final InputStream input) throws IOException {
+		QueryResultPre rd = new QueryResultPre();
 		int b = 1;
 		while (b > 0) {
 			// read PRE value

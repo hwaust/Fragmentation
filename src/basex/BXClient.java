@@ -47,7 +47,7 @@ public class BXClient extends BaseXClient {
 	public QueryResult executeForIntStringArray(final String command) throws IOException {
 		long start = System.currentTimeMillis();
 		send(command);
-		QueryResult_IntStringList qr = PreValueReceiver.process(in);
+		QueryResultPre qr = PreValueReceiver.process(in);
 
 		info = receive();
 		if (!ok())
