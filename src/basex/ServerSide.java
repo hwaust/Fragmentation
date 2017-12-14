@@ -31,6 +31,15 @@ public class ServerSide {
 				+ "    return (db:node-pre($node), $node)";
 	}
 
+	/**
+	 * Returns the XQuery expression for prefix query.
+	 * 
+	 * @param query
+	 *            The specified XPath query plan.
+	 * @param P
+	 *            The total number of partitions.
+	 * @return The XQuery expression for prefix query.
+	 */
 	public String getPrefix(QueryPlan query, int P) {
 		String prefix = prefix_format;
 		prefix = prefix.replace("{prefix}", query.first());
@@ -40,6 +49,15 @@ public class ServerSide {
 		return prefix;
 	}
 
+	/**
+	 * Returns a list of XQuery expressions for suffix queries.
+	 * 
+	 * @param query
+	 *            The specified XPath query plan.
+	 * @param P
+	 *            The total number of partitions.
+	 * @return A list of XQuery expressions for suffix queries.
+	 */
 	public String[] getSuffix(QueryPlan query, int P) {
 		String[] suffixes = new String[P];
 		for (int i = 0; i < P; i++) {
@@ -61,6 +79,6 @@ public class ServerSide {
 		bx.execute("drop db " + tmpdb);
 		bx.execute("set mainmem true");
 		bx.execute("set queryinfo true");
-		bx.execute("create db " + tmpdb + " <root></root>"); 
+		bx.execute("create db " + tmpdb + " <root></root>");
 	}
 }

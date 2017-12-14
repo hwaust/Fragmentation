@@ -15,20 +15,21 @@ public class MyRunnable implements Runnable {
 	}
 
 	public static long parallelRun(MyRunnable[] tasks) throws Exception {
-		long t1 = System.currentTimeMillis();
-		int P = tasks.length;
-		ExecutorService executor = Executors.newFixedThreadPool(P);
-		CountDownLatch latch = new CountDownLatch(P);
-		for (int i = 0; i < P; i++)
+		ExecutorService executor = Executors.newFixedThreadPool(tasks.length);
+		CountDownLatch latch = new CountDownLatch(tasks.length);
+		for (int i = 0; i < tasks.length; i++)
 			tasks[i].latch = latch;
 
-		for (int i = 0; i < P; i++)
+		for (int i = 0; i < tasks.length; i++)
 			executor.submit(tasks[i]);
-
+		
+		long time = System.currentTimeMillis();
 		latch.await();
-
+		time = System.currentTimeMillis() - time;
+		
 		executor.shutdown();
-		return System.currentTimeMillis() - t1;
+
+		return time;
 	}
 
 	public static long parallelRun(PExecutor[][] pess) throws Exception {

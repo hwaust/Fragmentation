@@ -4,11 +4,11 @@ public class PExecutor extends MyRunnable {
 	public QueryResult sr;
 	public String xquery;
 	public BXClient bx;
-
-	public int resultType = 0;
+	public int resultType;
 
 	public PExecutor(BXClient bxclient) {
 		this.bx = bxclient;
+		resultType = 0;
 	}
 
 	public PExecutor(BXClient processor, int resultType, String query) {
@@ -42,12 +42,8 @@ public class PExecutor extends MyRunnable {
 			latch.countDown();
 	}
 
-	public void close() {
-		try {
-			bx.close();
-		} catch (Exception e) {
-			// e.printStackTrace();
-		}
+	public void close() throws Exception {
+		bx.close();
 	}
 
 	public void setQuery(String xquery, int resultType) {

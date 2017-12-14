@@ -23,7 +23,6 @@ public class BXClient extends BaseXClient {
 	public static BXClient open(String ip) throws IOException {
 		return new BXClient(ip, 1984, "admin", "admin");
 	}
- 
 
 	public BXClient(String host, int port, String username, String password) throws IOException {
 		super(host, port, username, password);
@@ -49,8 +48,8 @@ public class BXClient extends BaseXClient {
 		long start = System.currentTimeMillis();
 		send(command);
 		QueryResult_IntStringList qr = PreValueReceiver.process(in);
- 
-		 info = receive(); 
+
+		info = receive();
 		if (!ok())
 			throw new IOException(info);
 		qr.exetime = System.currentTimeMillis() - start;

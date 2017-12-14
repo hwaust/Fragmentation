@@ -8,18 +8,20 @@ import basex.QueryPlans;
 public class QContext {
 
 	public String datafolder;
-	public String[] ips;       // workers
-	public String[] dbs;       // databases on workers
-	public int p;              // number of partitions
+	public String[] ips; // workers
+	public String[] dbs; // databases on workers
+	public int p; // number of partitions
 	public QueryPlan query;
 	public char separator;
+	public boolean debug;
+	public boolean serial; // query in serial or parallel
 
 	public QContext() {
 		datafolder = "D:\\data\\fragments";
 	}
 
 	public static QContext parse(String[] args) throws Exception {
-		QContext fc = new QContext();
+		QContext c = new QContext();
 
 		for (int i = 0; i < args.length / 2; i++) {
 			String op = args[i * 2].substring(1);
@@ -28,35 +30,43 @@ public class QContext {
 			switch (op) {
 
 			case "f":
-				fc.datafolder = v;
+				c.datafolder = v;
 				break;
 
 			case "iplist":
-				fc.ips = parseIPs(v);
+				c.ips = parseIPs(v);
 				break;
 
 			case "dblist":
-				fc.dbs = parseDBs(v);
+				c.dbs = parseDBs(v);
 				break;
 
 			case "key":
-				fc.query = QueryPlans.getQueryPlan(v);
+				c.query = QueryPlans.getQueryPlan(v);
 				break;
 
 			case "sp":
-				fc.separator = v.charAt(0);
+				c.separator = v.charAt(0);
 				break;
 
 			case "p":
-				fc.p = Integer.parseInt(v);
+				c.p = Integer.parseInt(v);
+				break;
+
+			case "debug":
+				c.debug = v.equals("true") || v.equals("on");
+				break;
+
+			case "serial":
+				c.serial = v.equals("true") || v.equals("on");
 				break;
 			}
 
 		}
 
-		fc.check();
+		c.check();
 
-		return fc;
+		return c;
 	}
 
 	void check() throws Exception {

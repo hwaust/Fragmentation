@@ -29,6 +29,7 @@ public class QueryEvaluatorDPS {
 
 		int Ns = c.dbs.length; // number of merged trees (or workers)
 		int P = c.p; // number of partitions
+		System.out.printf("Ns=%d, P=%d.\n", Ns, P);
 
 		// load fragments and trees
 		ArrayList<Fragment> fs = Fragment.readFragmentList(c.datafolder);
@@ -44,8 +45,9 @@ public class QueryEvaluatorDPS {
 
 		// in charge of parallel executing.
 		PExecutor[] pes = new PExecutor[Ns];
-		for (int i = 0; i < Ns; i++)
+		for (int i = 0; i < Ns; i++) {
 			pes[i] = new PExecutor(BXClient.open(c.ips[i]));
+		}
 
 		// prefix queries
 		String[] prefixes = new String[Ns];
@@ -53,7 +55,7 @@ public class QueryEvaluatorDPS {
 			prefixes[i] = sss[i].getPrefix(c.query, P);
 
 		// suffix queries
-		String[][] suffixes = new String[trees.length][];
+		String[][] suffixes = new String[Ns][];
 		for (int i = 0; i < prefixes.length; i++)
 			suffixes[i] = sss[i].getSuffix(c.query, P);
 
@@ -62,11 +64,11 @@ public class QueryEvaluatorDPS {
 		for (int i = 0; i < Ns; i++)
 			sss[i].prepare(pes[i].bx);
 
-		/*******************************
+		/*******************************************
 		 * 
 		 * Execute prefix queries
 		 * 
-		 *******************************/
+		 *******************************************/
 		for (int i = 0; i < pes.length; i++) {
 			pes[i].setQuery(prefixes[i], 0);
 		}
@@ -74,29 +76,32 @@ public class QueryEvaluatorDPS {
 		System.out.println("Executing prefix queries...");
 		long Tprefix = PExecutor.parallelRun(pes);
 
-		// Save temp databases.
-		System.out.println("Saving temporary databases...");
-		for (int i = 0; i < pes.length; i++) {
-			String q0 = String.format("xquery db:open('mfrag%d_tmp')", i);
-			String r = pes[i].bx.execute(q0);
-			common.saveStringtoFile(r, outfolder + "TEMPDB_" + i + ".txt"); 
+		// Save intermediate databases if in debug node.
+		if (c.debug) {
+			System.out.println("Saving temporary databases...");
+			for (int i = 0; i < pes.length; i++) {
+				String q0 = String.format("xquery db:open('" + c.dbs[i] + "_tmp')", i);
+				String r = pes[i].bx.execute(q0);
+				common.saveStringtoFile(r, outfolder + "TEMPDB_" + i + ".txt");
+			}
 		}
 
-		System.out.println("Prefix part done.");
-		Thread.sleep(1000);
-		/*******************************
+		System.out.println("Prefix query done.");
+		/*******************************************
 		 * 
 		 * Process suffix query
 		 * 
-		 *******************************/
+		 *******************************************/
 
-		// execute and store the original output of P1.
-		System.out.println("Saving output of P1");
-		for (int i = 0; i < Ns; i++) {
-			for (int j = 0; j < P; j++) {
-				String data = pes[i].bx.execute(suffixes[i][j]);
-				String fileij = outfolder + String.format("PT1_OUTPUT_T%d_P%d_org.txt", i, j);
-				common.saveStringtoFile(data, fileij);
+		// execute and store the original output of P1 if in debug node.
+		if (c.debug) {
+			System.out.println("Saving output of P1");
+			for (int i = 0; i < Ns; i++) {
+				for (int j = 0; j < P; j++) {
+					String data = pes[i].bx.execute(suffixes[i][j]);
+					String fileij = outfolder + String.format("PT1_OUTPUT_T%d_P%d_org.txt", i, j);
+					common.saveStringtoFile(data, fileij);
+				}
 			}
 		}
 
@@ -110,29 +115,32 @@ public class QueryEvaluatorDPS {
 		}
 		long Tsuffix = PExecutor.parallelRun(pess);
 		System.out.println("Evaluation of Suffix queries done.");
-		/*******************************
+
+		/*******************************************
 		 * 
 		 * Merge results
 		 * 
-		 *******************************/
+		 *******************************************/
 		System.out.println("Starting merging...");
 		QueryResult_IntStringList[][] rs = new QueryResult_IntStringList[Ns][];
 		for (int i = 0; i < Ns; i++) {
 			rs[i] = new QueryResult_IntStringList[P];
 			for (int j = 0; j < P; j++) {
-				rs[i][j] = (QueryResult_IntStringList) pess[i][j].sr; 
+				rs[i][j] = (QueryResult_IntStringList) pess[i][j].sr;
 			}
 		}
 
-		// Save Results for the first step
-		for (int i = 0; i < Ns; i++) {
-			for (int j = 0; j < P; j++) {
-				QueryResult_IntStringList rij = rs[i][j];
-				StringBuilder sb = new StringBuilder();
-				for (int k = 0; k < rij.pres.size(); k++)
-					sb.append(rij.values.get(k) + "\r\n");
-				String filename = String.format("%sPT2_OUTPUT_T%d_P%d.txt", outfolder, i, j);
-				common.saveStringtoFile(sb.toString(), filename);
+		// Save Results for the first step if in debug node.
+		if (c.debug) {
+			for (int i = 0; i < Ns; i++) {
+				for (int j = 0; j < P; j++) {
+					QueryResult_IntStringList rij = rs[i][j];
+					StringBuilder sb = new StringBuilder();
+					for (int k = 0; k < rij.pres.size(); k++)
+						sb.append(rij.values.get(k) + "\r\n");
+					String filename = String.format("%sPT2_OUTPUT_T%d_P%d.txt", outfolder, i, j);
+					common.saveStringtoFile(sb.toString(), filename);
+				}
 			}
 		}
 
@@ -162,13 +170,17 @@ public class QueryEvaluatorDPS {
 		}
 		Tmerge = System.currentTimeMillis() - Tmerge;
 
+
+		// Save the final result if in debug node. 
 		System.out.println("Saving results...");
+		long Tsave = System.currentTimeMillis();
 		StringBuilder sb = new StringBuilder();
 		for (Fragment f : fs)
 			f.results.forEach(s -> sb.append(s + "\n"));
 		common.saveStringtoFile(sb.toString(), outfolder + "P3_OUTPUT_FinalResult.txt");
-
-		System.out.printf("Completed. Tprefix=%d ms; Tsufix=%d ms; Tmerge=%d\n", Tprefix, Tsuffix, Tmerge);
+		Tsave = System.currentTimeMillis() - Tsave;
+		
+		System.out.printf("Completed. Tprefix=%d ms; Tsufix=%d ms; Tmerge=%d ms, Tsave=%d ms.\n", Tprefix, Tsuffix, Tmerge, Tsave);
 		System.out.println("Results are saved to: " + outfolder + "\n");
 	}
 
