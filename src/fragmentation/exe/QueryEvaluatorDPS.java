@@ -23,14 +23,13 @@ public class QueryEvaluatorDPS {
 		// for test
 		if (args.length == 0)
 			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3a.dps", "-f",
-					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4", "-debug", "off" };
+					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4", "-debug", "off", "-serial", "on" };
 
 		QContext c = QContext.parse(args);
 		System.out.println("Processing " + c);
 
 		int Ns = c.dbs.length; // number of merged trees (or workers)
 		int P = c.p; // number of partitions
-		System.out.printf("Ns=%d, P=%d.\n", Ns, P);
 
 		// load fragments and trees
 		ArrayList<Fragment> fs = Fragment.readFragmentList(c.datafolder);
@@ -48,6 +47,7 @@ public class QueryEvaluatorDPS {
 		PExecutor[] pes = new PExecutor[Ns];
 		for (int i = 0; i < Ns; i++) {
 			pes[i] = new PExecutor(BXClient.open(c.ips[i]));
+			pes[i].tag = "PRE_" + i;
 		}
 
 		// prefix queries
@@ -75,7 +75,7 @@ public class QueryEvaluatorDPS {
 		}
 
 		System.out.println("Executing prefix queries...");
-		long Tprefix = PExecutor.parallelRun(pes);
+		long Tprefix = c.serial ? PExecutor.serialRun(pes) : PExecutor.parallelRun(pes);
 
 		// Save intermediate databases if in debug node.
 		if (c.debug) {
@@ -112,9 +112,12 @@ public class QueryEvaluatorDPS {
 			pess[i] = new PExecutor[P];
 			for (int j = 0; j < P; j++) {
 				pess[i][j] = new PExecutor(BXClient.open(c.ips[i]), 1, suffixes[i][j]);
+				pess[i][j].tag = String.format("SUFFIX_T_%d_F_%d", i, j);
 			}
 		}
-		long Tsuffix = PExecutor.parallelRun(pess);
+
+		long Tsuffix = c.serial ? PExecutor.serialRun(PExecutor.toArray(pess))
+				: PExecutor.parallelRun(PExecutor.toArray(pess));
 		System.out.println("Evaluation of Suffix queries done.");
 
 		/*******************************************
@@ -145,13 +148,17 @@ public class QueryEvaluatorDPS {
 			}
 		}
 
-		int totals = 0;
-		for(int i = 0; i < rs.length; i++)
-			for(int j = 0; j < rs[i].length; j++)
-				totals+= rs[i][j].size();
-		System.out.println("totals=" + totals);
-		
-		
+		int totalsize = 0;
+		int totallen = 0;
+		for (int i = 0; i < rs.length; i++)
+			for (int j = 0; j < rs[i].length; j++) {
+				totalsize += rs[i][j].size();
+				for (int k = 0; k < rs[i][j].values.size(); k++) {
+					totallen += rs[i][j].values.get(k).length();
+				}
+			}
+		System.out.println("totals=" + totalsize + ", total length=" + totallen);
+
 		System.out.println("Regrouping nodes...");
 		long Tmerge = System.currentTimeMillis();
 		for (int i = 0; i < trees.length; i++) {
@@ -177,10 +184,7 @@ public class QueryEvaluatorDPS {
 		// Save the final result if in debug node.
 		System.out.println("Saving results...");
 		long Tsave = System.currentTimeMillis();
-		StringBuilder sb = new StringBuilder();
-		for (Fragment f : fs)
-			f.results.forEach(s -> sb.append(s + "\r\n"));
-		common.saveStringtoFile(sb.toString(), outfolder + "P3_OUTPUT_FinalResult.txt");
+		Fragment.save(fs, outfolder + "P3_OUTPUT_FinalResult.txt");
 		Tsave = System.currentTimeMillis() - Tsave;
 
 		System.out.printf("Tprefix=%d ms, Tsufix=%d ms, Tmerge=%d ms, Tsave=%d ms ==> %s\n", Tprefix, Tsuffix, Tmerge,

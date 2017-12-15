@@ -144,13 +144,11 @@ public class QContext {
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-
-		sb.append("Server list: ");
-		for (int i = 0; i < ips.length; i++)
-			sb.append(ips[i] + "." + dbs[i] + "; ");
-		sb.append("\n");
-
-		sb.append("Query Key: " + query.key + "\n");
+		sb.append(query.key + "; ");
+		sb.append("Ns = " + ips.length + "; P = " + this.p + "; ");
+		sb.append(this.serial ? "serial; " : "parallel; ");
+		if (this.debug)
+			sb.append("debug; ");
 		sb.append("Input folder: " + datafolder);
 
 		return sb.toString();
