@@ -34,21 +34,27 @@ public class FContext {
 			case "sv":
 				fc.ip = v;
 				break;
+				
 			case "db":
 				fc.db = v;
 				break;
+				
 			case "n":
 				fc.Ns = Integer.parseInt(v);
 				break;
+				
 			case "ms":
 				fc.maxsize = common.FormatedStringToInt(v);
 				break;
+				
 			case "f":
 				fc.datafolder = v;
 				break;
+				
 			case "export":
 				fc.needExport = v.equals("on");
 				break;
+				
 			case "seed":
 				fc.seed = Integer.parseInt(v);
 				break;

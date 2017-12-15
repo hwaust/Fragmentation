@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import basex.BXClient;
 import basex.PExecutor;
 import basex.QueryPlans;
-import basex.QueryResult_IntStringList;
+import basex.QueryResultPre;
 import basex.common;
 import fragmentation.Fragment;
 import fragmentation.MergedTree;
@@ -63,15 +63,15 @@ public class QueryEvaluator {
 		// pe.run();
 		PExecutor.parallelRun(pes);
 
-		QueryResult_IntStringList[] rs = new QueryResult_IntStringList[trees.length];
+		QueryResultPre[] rs = new QueryResultPre[trees.length];
 		for (int i = 0; i < rs.length; i++) {
-			rs[i] = (QueryResult_IntStringList) pes[i].sr;
+			rs[i] = (QueryResultPre) pes[i].sr;
 		}
 
 		// map results to fragments by the original PRE values
 		long t2 = System.currentTimeMillis();
 		for (int i = 0; i < trees.length; i++) {
-			QueryResult_IntStringList rd = (QueryResult_IntStringList) pes[i].sr;
+			QueryResultPre rd = (QueryResultPre) pes[i].sr;
 			rd.initResults(trees[i].fragments.size());
 
 			int pos = 0;

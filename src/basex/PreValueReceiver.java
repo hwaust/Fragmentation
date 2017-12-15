@@ -10,15 +10,15 @@ public class PreValueReceiver {
 
 	public static void main(String[] args) throws Exception {
 		InputStream fr = new ByteArrayInputStream("1[<root></root>[2[<agsfasdfa>[23423423[alsdfasdfasf".getBytes());
-		QueryResult_IntStringList qi = process(fr);
+		QueryResultPre qi = process(fr);
 		fr.close();
 		for (int i = 0; i < qi.pres.size(); i++) {
 			System.out.printf("%d: %s.\n", qi.pres.get(i), qi.values.get(i));
 		}
 	}
 
-	public static QueryResult_IntStringList process(final InputStream input) throws IOException {
-		QueryResult_IntStringList rd = new QueryResult_IntStringList();
+	public static QueryResultPre process(final InputStream input) throws IOException {
+		QueryResultPre rd = new QueryResultPre();
 		int b = 1;
 		while (b > 0) {
 			// read PRE value

@@ -3,7 +3,7 @@ package tests;
 import basex.BXClient;
 import basex.QueryPlan;
 import basex.QueryPlans;
-import basex.QueryResult_IntStringList;
+import basex.QueryResultPre;
 import basex.ServerSide;
 
 public class ServerSideTest {
@@ -24,7 +24,7 @@ public class ServerSideTest {
 
 		// execute suffix query
 		for (String suffix : ss.getSuffix(query, P)) {
-			QueryResult_IntStringList qr = (QueryResult_IntStringList) bx.executeForIntStringArray(suffix);
+			QueryResultPre qr = (QueryResultPre) bx.executeForIntStringArray(suffix);
 			System.out.printf("execution time: %d, result size: %d \n", qr.exetime, qr.pres.size());
 		}
 

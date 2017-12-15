@@ -1,6 +1,8 @@
 package fragmentation;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -303,6 +305,14 @@ public class Fragment {
 		}
 
 		return f;
+	}
+
+	public static void save(List<Fragment> fs, String path) throws IOException {
+		FileWriter fw = new FileWriter(path);
+		for (Fragment f : fs)
+			for (String s : f.results)
+				fw.write(s + "\r\n");
+		fw.close();
 	}
 
 }

@@ -5,10 +5,11 @@ import java.util.List;
 
 import basex.BXClient;
 import basex.PExecutor;
-import basex.QueryResult_IntStringList;
+import basex.QueryResultPre;
 import basex.ServerSide;
 import basex.common;
 import fragmentation.Fragment;
+import fragmentation.InterResult;
 import fragmentation.MergedTree;
 import fragmentation.QContext;
 
@@ -22,14 +23,13 @@ public class QueryEvaluatorDPS {
 		// for test
 		if (args.length == 0)
 			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3a.dps", "-f",
-					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4" };
+					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4", "-debug", "off", "-serial", "on" };
 
 		QContext c = QContext.parse(args);
 		System.out.println("Processing " + c);
 
 		int Ns = c.dbs.length; // number of merged trees (or workers)
 		int P = c.p; // number of partitions
-		System.out.printf("Ns=%d, P=%d.\n", Ns, P);
 
 		// load fragments and trees
 		ArrayList<Fragment> fs = Fragment.readFragmentList(c.datafolder);
@@ -47,6 +47,7 @@ public class QueryEvaluatorDPS {
 		PExecutor[] pes = new PExecutor[Ns];
 		for (int i = 0; i < Ns; i++) {
 			pes[i] = new PExecutor(BXClient.open(c.ips[i]));
+			pes[i].tag = "PRE_" + i;
 		}
 
 		// prefix queries
@@ -74,7 +75,7 @@ public class QueryEvaluatorDPS {
 		}
 
 		System.out.println("Executing prefix queries...");
-		long Tprefix = PExecutor.parallelRun(pes);
+		long Tprefix = c.serial ? PExecutor.serialRun(pes) : PExecutor.parallelRun(pes);
 
 		// Save intermediate databases if in debug node.
 		if (c.debug) {
@@ -111,9 +112,12 @@ public class QueryEvaluatorDPS {
 			pess[i] = new PExecutor[P];
 			for (int j = 0; j < P; j++) {
 				pess[i][j] = new PExecutor(BXClient.open(c.ips[i]), 1, suffixes[i][j]);
+				pess[i][j].tag = String.format("SUFFIX_T_%d_F_%d", i, j);
 			}
 		}
-		long Tsuffix = PExecutor.parallelRun(pess);
+
+		long Tsuffix = c.serial ? PExecutor.serialRun(PExecutor.toArray(pess))
+				: PExecutor.parallelRun(PExecutor.toArray(pess));
 		System.out.println("Evaluation of Suffix queries done.");
 
 		/*******************************************
@@ -122,11 +126,11 @@ public class QueryEvaluatorDPS {
 		 * 
 		 *******************************************/
 		System.out.println("Starting merging...");
-		QueryResult_IntStringList[][] rs = new QueryResult_IntStringList[Ns][];
+		QueryResultPre[][] rs = new QueryResultPre[Ns][];
 		for (int i = 0; i < Ns; i++) {
-			rs[i] = new QueryResult_IntStringList[P];
+			rs[i] = new QueryResultPre[P];
 			for (int j = 0; j < P; j++) {
-				rs[i][j] = (QueryResult_IntStringList) pess[i][j].sr;
+				rs[i][j] = (QueryResultPre) pess[i][j].sr;
 			}
 		}
 
@@ -134,7 +138,7 @@ public class QueryEvaluatorDPS {
 		if (c.debug) {
 			for (int i = 0; i < Ns; i++) {
 				for (int j = 0; j < P; j++) {
-					QueryResult_IntStringList rij = rs[i][j];
+					QueryResultPre rij = rs[i][j];
 					StringBuilder sb = new StringBuilder();
 					for (int k = 0; k < rij.pres.size(); k++)
 						sb.append(rij.values.get(k) + "\r\n");
@@ -144,17 +148,24 @@ public class QueryEvaluatorDPS {
 			}
 		}
 
+		int totalsize = 0;
+		int totallen = 0;
+		for (int i = 0; i < rs.length; i++)
+			for (int j = 0; j < rs[i].length; j++) {
+				totalsize += rs[i][j].size();
+				for (int k = 0; k < rs[i][j].values.size(); k++) {
+					totallen += rs[i][j].values.get(k).length();
+				}
+			}
+		System.out.println("totals=" + totalsize + ", total length=" + totallen);
+
 		System.out.println("Regrouping nodes...");
 		long Tmerge = System.currentTimeMillis();
 		for (int i = 0; i < trees.length; i++) {
 			MergedTree tree = trees[i];
 			int pos = 0;
-			List<List<String>> values = new ArrayList<List<String>>();
-			for (int t = 0; t < tree.fragments.size(); t++)
-				values.add(new ArrayList<String>());
-
 			for (int k = 0; k < P; k++) {
-				QueryResult_IntStringList rd = rs[i][k];
+				QueryResultPre rd = rs[i][k];
 				for (int j = 0; j < rd.pres.size(); j++) {
 					while (pos < trees[i].fragments.size() - 1 && rd.pres.get(j) > trees[i].fragments.get(pos + 1).mpre)
 						pos++;
@@ -170,18 +181,14 @@ public class QueryEvaluatorDPS {
 		}
 		Tmerge = System.currentTimeMillis() - Tmerge;
 
-
-		// Save the final result if in debug node. 
+		// Save the final result if in debug node.
 		System.out.println("Saving results...");
 		long Tsave = System.currentTimeMillis();
-		StringBuilder sb = new StringBuilder();
-		for (Fragment f : fs)
-			f.results.forEach(s -> sb.append(s + "\n"));
-		common.saveStringtoFile(sb.toString(), outfolder + "P3_OUTPUT_FinalResult.txt");
+		Fragment.save(fs, outfolder + "P3_OUTPUT_FinalResult.txt");
 		Tsave = System.currentTimeMillis() - Tsave;
-		
-		System.out.printf("Completed. Tprefix=%d ms; Tsufix=%d ms; Tmerge=%d ms, Tsave=%d ms.\n", Tprefix, Tsuffix, Tmerge, Tsave);
-		System.out.println("Results are saved to: " + outfolder + "\n");
+
+		System.out.printf("Tprefix=%d ms, Tsufix=%d ms, Tmerge=%d ms, Tsave=%d ms ==> %s\n", Tprefix, Tsuffix, Tmerge,
+				Tsave, outfolder);
 	}
 
 }
