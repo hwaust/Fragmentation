@@ -16,7 +16,7 @@ public class ORIG {
 		String outfolder = c.makeOutFolder();
 		String outfile = outfolder + c.query.key + ".txt";
 
-		BXClient bx = BXClient.open("localhost");
+		BXClient bx = BXClient.open(c.server);
 		String query = String.format("xquery for $node in db:open('%s')%s return $node", c.database, c.query.first());
 		Logger logger = new Logger(c.outputfolder + File.separator + c.toCharacterString() + ".txt");
 		long executionTime = 0;

@@ -57,6 +57,10 @@ public class Context {
 			String arg = ops[i].split(" ")[1];
 
 			switch (cmd) {
+			case "server":
+				c.server = arg;
+				break;
+				
 			case "db":
 				c.database = arg;
 				break;
