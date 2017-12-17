@@ -1,4 +1,7 @@
 
+---------------------- optimized query keys ---------------------- 
+optimization: xm2c.dps; xm4c.dps
+
 ---------------------- Original queries ----------------------
 xm1.org: /site//*[name(.)="emailaddress" or name(.)="annotation" or name(.)="description"]
 xm2.org: /site//incategory[./@category="category52"]/parent::item/@id
@@ -23,7 +26,7 @@ xm2b.dps: /site/*
 xm2b.dps: /descendant-or-self::incategory[./@category="category52"]/parent::item/@id
 
 xm3a.dps: /site//open_auction
-xm3a.dps: /bidder[last()]
+xm3a.dps: /bidder[last()]/date
 
 xm3b.dps: /site/*
 xm3b.dps: /descendant-or-self::open_auction/bidder[last()]
@@ -60,8 +63,8 @@ xm2c.dps: /parent::*:incategory[ancestor::*:site/parent::document-node()]/parent
 xm3c.dps: /site/open_auctions/open_auction
 xm3c.dps: /bidder[last()]
 
-xm4c.dps: db:text("{db}", "Creditcard")/parent::*:payment
-xm4c.dps: /parent::*:item[parent::*/parent::*:regions/parent::*:site/parent::document-node()][(*:location = "United States")][0.0 < *:quantity][*:description][*:name]
+xm4c.dps: db:text("{db}", "Creditcard")
+xm4c.dps: /parent::*:payment/parent::*:item[parent::*/parent::*:regions/parent::*:site/parent::document-node()][(*:location = "United States")][0.0 < *:quantity][*:description][*:name]
 
 xm6c.dps: /site/regions/*[name(.)="africa" or name(.)="asia"]/item
 xm6c.dps: /description/parlist/listitem

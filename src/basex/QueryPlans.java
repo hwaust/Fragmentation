@@ -28,7 +28,8 @@ public class QueryPlans {
 	}
 
 	public static void initialize() throws Exception {
-		BufferedReader br = new BufferedReader(new FileReader(common.getCurrentFolder() + File.separator + "bxQueries.txt"));
+		BufferedReader br = new BufferedReader(
+				new FileReader(common.getCurrentFolder() + File.separator + "bxQueries.txt"));
 		xqueries = new HashMap<String, QueryPlan>();
 		while (true) {
 			String line = br.readLine();
@@ -47,7 +48,7 @@ public class QueryPlans {
 
 			String key = line.substring(0, p).trim();
 			String value = line.substring(p + 1).trim();
-			
+
 			QueryPlan qp = xqueries.get(key);
 			if (qp == null) {
 				qp = new QueryPlan(key);
@@ -55,10 +56,19 @@ public class QueryPlans {
 			}
 			qp.add(value);
 		}
-
+		
 		br.close();
-	}
 
-	
+		// set optimization.
+		QueryPlan optimization = xqueries.get("optimization");
+		if (optimization != null) {
+			for (String key : optimization.first().split(";")) {
+				QueryPlan q = xqueries.get(key.trim());
+				if (q != null)
+					q.optimized = true;
+			}
+		}
+
+	}
 
 }

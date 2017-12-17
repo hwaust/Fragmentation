@@ -17,7 +17,7 @@ public class ServerSide {
 		database = db;
 		tmpdb = database + "_tmp";
 
-		prefix_format = "xquery let $d := array { db:open('{db}'){prefix} ! db:node-pre(.) } return\n"
+		prefix_format = "xquery let $d := array { {header} ! db:node-pre(.) } return\n"
 				+ "for $i in 0 to {P} - 1 return\n" + "    let $q := array:size($d) idiv {P} return\n"
 				+ "    let $r := array:size($d) mod {P} return\n"
 				+ "    let $part_length := if ($i < $r) then $q + 1 else $q return\n"
@@ -41,7 +41,8 @@ public class ServerSide {
 	 * @return The XQuery expression for prefix query.
 	 */
 	public String getPrefix(QueryPlan query, int P) {
-		String prefix = prefix_format;
+		String header = query.optimized ? "{prefix}" : "db:open('{db}'){prefix}";
+		String prefix = prefix_format.replace("{header}", header);
 		prefix = prefix.replace("{prefix}", query.first());
 		prefix = prefix.replace("{db}", database);
 		prefix = prefix.replace("{P}", P + "");
@@ -78,7 +79,6 @@ public class ServerSide {
 	public void prepare(BXClient bx) throws Exception {
 		bx.execute("drop db " + tmpdb);
 		bx.execute("set mainmem true");
-		bx.execute("set queryinfo true");
 		bx.execute("create db " + tmpdb + " <root></root>");
 	}
 }

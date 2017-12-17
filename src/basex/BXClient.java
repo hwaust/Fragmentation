@@ -21,7 +21,9 @@ public class BXClient extends BaseXClient {
 	Charset encoding = Charset.forName("UTF-8");
 
 	public static BXClient open(String ip) throws IOException {
-		return new BXClient(ip, 1984, "admin", "admin");
+		BXClient bx = new BXClient(ip, 1984, "admin", "admin");
+		bx.send("set queryinfo on");
+		return bx;
 	}
 
 	public BXClient(String host, int port, String username, String password) throws IOException {

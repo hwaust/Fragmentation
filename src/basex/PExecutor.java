@@ -1,5 +1,6 @@
 package basex;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -12,7 +13,7 @@ public class PExecutor implements Runnable {
 	public String xquery;
 	public BXClient bx;
 	public int resultType;
-
+	public static String outputfolder;
 	public CountDownLatch latch;
 
 	public PExecutor(BXClient bxclient) {
@@ -43,9 +44,10 @@ public class PExecutor implements Runnable {
 				sr = bx.executeForIntStringArray(xquery);
 				break;
 			}
-			
+
 			System.out.printf("%s: Execution time = %d ms\n", tag, System.currentTimeMillis() - time);
-			
+			common.saveStringtoFile(bx.info, outputfolder + File.separator + tag + ".txt");
+
 		} catch (Exception e) {
 			System.out.println("PExecutor.run: result type = " + resultType + ", sr = " + sr);
 			e.printStackTrace();
@@ -101,7 +103,7 @@ public class PExecutor implements Runnable {
 		for (PExecutor task : tasks) {
 			task.run();
 		}
-		
+
 		return System.currentTimeMillis() - time;
 
 	}

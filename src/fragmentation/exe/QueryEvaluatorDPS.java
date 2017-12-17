@@ -1,5 +1,6 @@
 package fragmentation.exe;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class QueryEvaluatorDPS {
 		 *******************************/
 		// for test
 		if (args.length == 0)
-			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm3a.dps", "-f",
+			args = new String[] { "-iplist", "#4", "-dblist", "range:mfrag:0-3", "-key", "xm4c.dps", "-f",
 					"D:\\data\\fragments\\xmark1_4_20K_20171126", "-p", "4", "-debug", "off", "-serial", "on" };
 
 		QContext c = QContext.parse(args);
@@ -42,7 +43,9 @@ public class QueryEvaluatorDPS {
 
 		// for storing output data.
 		String outfolder = c.makeOutputFolder();
-
+		PExecutor.outputfolder = outfolder + File.separator + "logs";
+		new File(PExecutor.outputfolder).mkdirs(); 
+		
 		// in charge of parallel executing.
 		PExecutor[] pes = new PExecutor[Ns];
 		for (int i = 0; i < Ns; i++) {
@@ -52,8 +55,9 @@ public class QueryEvaluatorDPS {
 
 		// prefix queries
 		String[] prefixes = new String[Ns];
-		for (int i = 0; i < Ns; i++)
+		for (int i = 0; i < Ns; i++) {
 			prefixes[i] = sss[i].getPrefix(c.query, P);
+		}
 
 		// suffix queries
 		String[][] suffixes = new String[Ns][];

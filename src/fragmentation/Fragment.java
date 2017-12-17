@@ -311,7 +311,7 @@ public class Fragment {
 		FileWriter fw = new FileWriter(path);
 		for (Fragment f : fs)
 			for (String s : f.results)
-				fw.write(s + "\r\n");
+				fw.write(s + "\n");
 		fw.close();
 	}
 

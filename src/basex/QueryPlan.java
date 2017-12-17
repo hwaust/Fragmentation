@@ -10,10 +10,14 @@ public class QueryPlan {
 	// Sub queries.
 	ArrayList<String> subqueries;
 
+	// indicate whether a query is optimized.
+	public boolean optimized;
+
 
 	public QueryPlan(String key) {
 		this.key = key;
 		this.subqueries = new ArrayList<String>(2);
+		this.optimized = false;
 	}
 
 	public void show() {
