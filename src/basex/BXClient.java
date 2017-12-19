@@ -22,7 +22,7 @@ public class BXClient extends BaseXClient {
 
 	public static BXClient open(String ip) throws IOException {
 		BXClient bx = new BXClient(ip, 1984, "admin", "admin");
-		bx.send("set queryinfo on");
+		// bx.send("set queryinfo on");
 		return bx;
 	}
 

@@ -105,7 +105,7 @@ public class Context {
 	}
 
 	public String toString() {
-		return String.format("database=%s, querykey=%s, storage=%s", database, query.key, inMemory ? "memory" : "disk");
+		return String.format("database=%s, querykey=%s, storage=%s", database, query==null? "null": query.key, inMemory ? "memory" : "disk");
 	}
 
 	public String makeOutFolder() throws Exception {

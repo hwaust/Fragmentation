@@ -21,16 +21,16 @@ public class XQuery {
 
 		for (int rt = 0; rt < c.runningTimes; rt++) {
 			common.gc();
-
+			String query = "xquery " + c.query.first();
 			if (c.inMemory) {
 				long startTime = System.currentTimeMillis();
-				bx.execute(c.query.first());
+				bx.execute(query);
 				executionTime = System.currentTimeMillis() - startTime;
 			} else {
 				new File(outfile).delete();
 				FileWriter fw = new FileWriter(outfile);
 				long startTime = System.currentTimeMillis();
-				bx.execute(c.query.first(), fw);
+				bx.execute(query, fw);
 				executionTime = System.currentTimeMillis() - startTime;
 				fw.close();
 			}
