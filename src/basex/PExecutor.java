@@ -16,6 +16,8 @@ public class PExecutor implements Runnable {
 	public static String outputfolder;
 	public CountDownLatch latch;
 
+	public static int counter;
+
 	public PExecutor(BXClient bxclient) {
 		this.bx = bxclient;
 		resultType = 0;
@@ -44,8 +46,8 @@ public class PExecutor implements Runnable {
 				sr = bx.executeForIntStringArray(xquery);
 				break;
 			}
-
-			System.out.printf("%s: Execution time = %d ms\n", tag, System.currentTimeMillis() - time);
+			counter++;
+			System.out.printf("%d_%s: Execution time = %d ms\n", counter, tag, System.currentTimeMillis() - time);
 			common.saveStringtoFile(bx.info, outputfolder + File.separator + tag + ".txt");
 
 		} catch (Exception e) {
@@ -80,6 +82,7 @@ public class PExecutor implements Runnable {
 	}
 
 	public static long parallelRun(PExecutor[] tasks) throws Exception {
+		counter = 0;
 		ExecutorService executor = Executors.newFixedThreadPool(tasks.length);
 
 		CountDownLatch latch = new CountDownLatch(tasks.length);
@@ -99,6 +102,7 @@ public class PExecutor implements Runnable {
 	}
 
 	public static long serialRun(PExecutor[] tasks) throws Exception {
+		counter = 0;
 		long time = System.currentTimeMillis();
 		for (PExecutor task : tasks) {
 			task.run();

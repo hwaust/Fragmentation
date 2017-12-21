@@ -2,15 +2,12 @@ package fragmentation.exe;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
-
 import basex.BXClient;
 import basex.PExecutor;
 import basex.QueryResultPre;
 import basex.ServerSide;
 import basex.common;
 import fragmentation.Fragment;
-import fragmentation.InterResult;
 import fragmentation.MergedTree;
 import fragmentation.QContext;
 
