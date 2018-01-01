@@ -6,10 +6,10 @@ import basex.BXClient;
 import basex.PExecutor;
 import basex.QueryResultPre;
 import basex.ServerSide;
-import basex.common;
 import fragmentation.Fragment;
 import fragmentation.MergedTree;
 import fragmentation.QContext;
+import utils.common;
 
 public class QueryEvaluatorDPS {
 

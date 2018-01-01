@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 import basex.BXClient;
 import basex.QueryResultPre;
-import basex.common;
+import utils.common;
 
 public class IntPreEfficiencyTest {
 

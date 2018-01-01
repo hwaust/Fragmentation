@@ -54,12 +54,7 @@ public class DBInfo {
 				dbs[i] = new DBInfo(ips[i], "frag_" + i, dir);
 		}
 		return dbs;
-	}
-
-	
-	public void check() throws Exception {
-
-	}
+	} 
 
 	/**
 	 * Return create db command.

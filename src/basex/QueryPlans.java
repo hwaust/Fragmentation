@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 
+import utils.common;
+
 public class QueryPlans {
 	static HashMap<String, QueryPlan> xqueries;
 

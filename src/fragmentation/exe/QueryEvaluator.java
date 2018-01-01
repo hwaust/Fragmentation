@@ -6,10 +6,10 @@ import basex.BXClient;
 import basex.PExecutor;
 import basex.QueryPlans;
 import basex.QueryResultPre;
-import basex.common;
 import fragmentation.Fragment;
 import fragmentation.MergedTree;
 import fragmentation.QContext;
+import utils.common;
 
 public class QueryEvaluator {
 	static boolean isSerial = false;

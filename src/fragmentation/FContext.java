@@ -2,7 +2,7 @@ package fragmentation;
 
 import java.io.File;
 
-import basex.common;
+import utils.common;
 
 public class FContext {
 	public String ip;

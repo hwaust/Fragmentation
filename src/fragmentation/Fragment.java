@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import basex.common;
+import utils.common;
 
 /**
  * A fragment is a list of subtrees rooted at the same node nr with the path

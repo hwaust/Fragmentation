@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import basex.BaseXHelper;
-import basex.common;
+import utils.common;
 
 public class FProcessor {
 	public FContext context;

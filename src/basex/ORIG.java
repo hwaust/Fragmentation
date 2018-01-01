@@ -3,6 +3,9 @@ package basex;
 import java.io.File;
 import java.io.FileWriter;
 
+import utils.Logger;
+import utils.common;
+
 public class ORIG {
 
 	public static void main(String... args) throws Exception {
